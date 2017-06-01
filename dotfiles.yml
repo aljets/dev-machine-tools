@@ -1,0 +1,28 @@
+---
+- hosts: all
+  vars:
+    dotfiles_repo: aljets/dotfiles
+    dotfiles_repo_dest: ~/tools/dotfiles
+    tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
+    dotfiles_dest: ~/
+    dotfiles_files:
+      - .vimrc
+      - .tmux.conf
+  tasks:
+  - name: clone dotfiles repo
+    git:
+      repo: "https://github.com/{{ dotfiles_repo }}.git"
+      dest: "{{ dotfiles_repo_dest }}"
+      accept_hostkey: yes
+  - name: symlink dotfiles to user home
+    # Note: this will fail (thankfully) if the dotfile exists and is a file
+    file:
+      src: "{{ dotfiles_repo_dest }}/{{ item }}"
+      dest: "{{ dotfiles_dest }}/{{ item }}"
+      state: link
+    with_items: "{{ dotfiles_files }}"
+  - name: install tmux plugin manager
+    git:
+      repo: "https://github.com/tmux-plugins/tpm"
+      dest: "~/.tmux/plugins/tpm"
+      accept_hostkey: yes
