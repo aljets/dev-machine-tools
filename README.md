@@ -13,7 +13,14 @@ Future:
 
 1. plug for vim and install plugins?
 1. iterm profile?
-1. install `ag`
+1. install brew packages
+    a. [reattach-to-user-namespace](https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard#quick-summary)
+    a. fzf
+    a. nvm and node
+    a. the_silver_searcher
+    a. tmux
+    a. tldr
+    a. git version 2.13+
 
 ## How should it be used?
 

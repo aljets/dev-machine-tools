@@ -21,7 +21,7 @@
       dest: "{{ dotfiles_dest }}/{{ item }}"
       state: link
     with_items: "{{ dotfiles_files }}"
-  - name: install tmux plugin manager
+  - name: clone tmux plugin manager
     git:
       repo: "https://github.com/tmux-plugins/tpm"
       dest: "~/.tmux/plugins/tpm"
