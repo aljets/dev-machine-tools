@@ -4,21 +4,21 @@
     dotfiles_repo: aljets/dotfiles
     dotfiles_repo_dest: ~/tools/dotfiles
     tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
-    dotfiles_dest: ~/
     dotfiles_files:
-      - .vimrc
-      - .tmux.conf
+      - {file: '.vimrc', dest: ~/.vimrc}
+      - {file: '.tmux.conf', dest: ~/.tmux.conf}
+      - {file: 'config.fish', dest: ~/.config/fish/config.fish}
   tasks:
-  - name: clone dotfiles repo
+  - name: clone repo that is the source of the dotfiles
     git:
       repo: "https://github.com/{{ dotfiles_repo }}.git"
       dest: "{{ dotfiles_repo_dest }}"
       accept_hostkey: yes
-  - name: symlink dotfiles to user home
+  - name: symlink dotfiles to location per config mapping
     # Note: this will fail (thankfully) if the dotfile exists and is a file
     file:
-      src: "{{ dotfiles_repo_dest }}/{{ item }}"
-      dest: "{{ dotfiles_dest }}/{{ item }}"
+      src: "{{ dotfiles_repo_dest }}/{{ item.file }}"
+      dest: "{{ item.dest }}"
       state: link
     with_items: "{{ dotfiles_files }}"
   - name: clone tmux plugin manager
