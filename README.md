@@ -11,6 +11,8 @@ Current:
 
 Future:
 
+1. separate file for config
+1. config includes configuring which things to run/install
 1. plug for vim and install plugins?
 1. iterm profile?
 1. install brew packages
