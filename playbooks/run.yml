@@ -1,2 +1,2 @@
-- include: dotfiles.yml
-- include: tmux.yml
+- import_playbook: dotfiles.yml
+- import_playbook: tmux.yml
