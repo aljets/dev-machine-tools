@@ -1,29 +1,25 @@
 # Ansible Playbook(s) for Dev Setup
 
-## What?
-
-An opinionated (read: "Adam's") playbook to set up devstack
-
-Current:
+Opinionated playbooks to set up devstack. Current playbooks:
 
 1. lays down dotfiles from github repo (e.g. `.vimrc`, `.tmux.conf`)
 1. fetches tmux plugin manager
 
-Future:
+## TODOs
 
 1. config includes configuring which things to run/install
 1. plug for vim and install plugins?
 1. iterm profile?
 1. install brew packages
-    a. [reattach-to-user-namespace](https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard#quick-summary)
-    a. fzf
-    a. nvm and node
-    a. the_silver_searcher
-    a. tmux
-    a. tldr
-    a. git version 2.13+
+    1. [reattach-to-user-namespace](https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard#quick-summary)
+    1. fzf
+    1. nvm and node
+    1. the_silver_searcher
+    1. tmux
+    1. tldr
+    1. git version 2.13+
 
-## How should it be used?
+## Use
 
 1. clone it
 1. [install ansible](http://docs.ansible.com/ansible/intro_installation.html#installing-the-control-machine) (or on mac use `brew`)
