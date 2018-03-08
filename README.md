@@ -11,7 +11,6 @@ Current:
 
 Future:
 
-1. separate file for config
 1. config includes configuring which things to run/install
 1. plug for vim and install plugins?
 1. iterm profile?
@@ -28,12 +27,12 @@ Future:
 
 1. clone it
 1. [install ansible](http://docs.ansible.com/ansible/intro_installation.html#installing-the-control-machine) (or on mac use `brew`)
-1. create config file with your variables
-1. run it (to run it locally, run `ansible-playbook dotfiles.yml -i 'localhost,' -c local`)
+1. configure: `playbooks/group_vars/all.yml` with your configuration
+1. run it: `ansible-playbook playbooks/dotfiles.yml` (or to run on another host, run `ansible-playbook dotfiles.yml -i 'localhost,' -c local`)
 
 ## What problems does this solve?
 
 1. This simplifies setting up new computers with dotfiles and other configuration
 1. In the admittedly-rare situation where I am devving on multiple machines, this conveniently keeps dev configuration on all machines in sync
 
-Is it worth maintaining an ansible playbook instead of doing everything manually? Perhaps not.
+Is it worth maintaining an ansible playbook instead of doing everything manually? Probably not.

@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tasks:
+  - name: clone tmux plugin manager
+    git:
+      repo: "https://github.com/tmux-plugins/tpm"
+      dest: "~/.tmux/plugins/tpm"
+      accept_hostkey: yes
