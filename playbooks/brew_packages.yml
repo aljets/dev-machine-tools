@@ -4,3 +4,5 @@
   - name: install brew packages
     homebrew:
       name: "{{ brew_packages }}"
+      update_homebrew: yes
+      state: latest
