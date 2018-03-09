@@ -1,0 +1,10 @@
+---
+- hosts: all
+  tasks:
+  - name: install node
+    homebrew:
+      name: node
+  - name: install n
+    npm:
+      name: n
+      global: yes

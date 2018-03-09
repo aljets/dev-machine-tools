@@ -1,2 +1,4 @@
 - import_playbook: dotfiles.yml
 - import_playbook: tmux.yml
+- import_playbook: brew_packages.yml
+- import_playbook: frontend.yml

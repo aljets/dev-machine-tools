@@ -5,3 +5,9 @@ dotfiles_files:
   - {file: '.vimrc', dest: ~/.vimrc}
   - {file: '.tmux.conf', dest: ~/.tmux.conf}
   - {file: 'config.fish', dest: ~/.config/fish/config.fish}
+brew_packages:
+  - the_silver_searcher
+  - jq
+  - git
+  - vim
+  - tldr

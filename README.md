@@ -4,20 +4,17 @@ Opinionated playbooks to set up devstack. Current playbooks:
 
 1. lays down dotfiles from github repo (e.g. `.vimrc`, `.tmux.conf`)
 1. fetches tmux plugin manager
+1. installs configured brew packages
+1. installs `node` and `n`
 
 ## TODOs
 
-1. config includes configuring which things to run/install
+1. config includes configuring which things to run/install, especially in `brew_packages`
 1. plug for vim and install plugins?
 1. iterm profile?
 1. install brew packages
     1. [reattach-to-user-namespace](https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard#quick-summary)
     1. fzf
-    1. nvm and node
-    1. the_silver_searcher
-    1. tmux
-    1. tldr
-    1. git version 2.13+
 
 ## Use
 

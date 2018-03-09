@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+  - name: install brew packages
+    homebrew:
+      name: "{{ brew_packages }}"
