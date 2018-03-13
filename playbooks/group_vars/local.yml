@@ -1,13 +1,14 @@
 dotfiles_repo: aljets/dotfiles
 dotfiles_repo_dest: ~/tools/dotfiles
-tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 dotfiles_files:
   - {file: '.vimrc', dest: ~/.vimrc}
   - {file: '.tmux.conf', dest: ~/.tmux.conf}
   - {file: 'config.fish', dest: ~/.config/fish/config.fish}
+tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_packages:
   - the_silver_searcher
   - jq
   - git
   - vim
   - tldr
+  - reattach-to-user-namespace  # https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard

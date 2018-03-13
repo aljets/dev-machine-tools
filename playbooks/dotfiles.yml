@@ -2,12 +2,13 @@
 - hosts: all
   tasks:
   - name: clone repo that is the source of the dotfiles
+    # Fails (unfortunately) if local changes
     git:
       repo: "https://github.com/{{ dotfiles_repo }}.git"
       dest: "{{ dotfiles_repo_dest }}"
       accept_hostkey: yes
   - name: symlink dotfiles to location per config mapping
-    # Note: this will fail (thankfully) if the dotfile exists and is a file
+    # Fails (thankfully) if the dotfile exists and is a file
     file:
       src: "{{ dotfiles_repo_dest }}/{{ item.file }}"
       dest: "{{ item.dest }}"
