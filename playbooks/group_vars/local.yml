@@ -6,6 +6,7 @@ dotfiles_files:
   - {file: 'config.fish', dest: ~/.config/fish/config.fish}
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_packages:
+  - fish
   - the_silver_searcher
   - jq
   - git
