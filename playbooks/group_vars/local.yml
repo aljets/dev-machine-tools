@@ -3,7 +3,8 @@ dotfiles_repo_dest: ~/tools/dotfiles
 dotfiles_files:
   - {file: '.vimrc', dest: ~/.vimrc}
   - {file: '.tmux.conf', dest: ~/.tmux.conf}
-  - {file: 'config.fish', dest: ~/.config/fish/config.fish}
+  - {file: 'fish/config.fish', dest: ~/.config/fish/config.fish}
+  - {file: 'fish/functions', dest: ~/.config/fish/functions_from_dotfiles}
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_packages:
   - fish
