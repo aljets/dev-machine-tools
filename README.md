@@ -17,6 +17,8 @@ Current playbooks:
    1. installs configured brew packages
 1. `frontend`
    1. installs `node` and `n`
+1. `local_bin`
+   1. lays down configured executables from github repo to /usr/local/bin
 
 ## TODOs
 

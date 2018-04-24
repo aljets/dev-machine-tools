@@ -1,8 +1,8 @@
 ---
 - hosts: all
   tasks:
-  - name: install brew packages
+  - name: update brew and install/upgrade brew packages
     homebrew:
       name: "{{ brew_packages }}"
-      update_homebrew: yes
       state: latest
+      update_homebrew: yes

@@ -5,6 +5,9 @@ dotfiles_files:
   - {file: '.tmux.conf', dest: ~/.tmux.conf}
   - {file: 'fish/config.fish', dest: ~/.config/fish/config.fish}
   - {file: 'fish/functions', dest: ~/.config/fish/functions_from_dotfiles}
+scripts_repo: aljets/dotfiles
+scripts_repo_dest: ~/tools/dotfiles
+scripts_repo_bin_directory: bin
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_packages:
   - fish

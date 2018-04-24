@@ -1,0 +1,21 @@
+---
+- hosts: all
+  tasks:
+  - name: clone repo that is the source of the dotfiles
+    # Fails (unfortunately) if local changes
+    git:
+      repo: "https://github.com/{{ scripts_repo }}.git"
+      dest: "{{ scripts_repo_dest }}"
+      accept_hostkey: yes
+  - name: find all the script files
+    find:
+      paths: "{{ scripts_repo_dest }}/{{ scripts_repo_bin_directory}}"
+    register: find
+  - name: symlink bin files to location per config mapping
+    # Fails (thankfully) if the script exists and is a file
+    file:
+      src: "{{ item.path }}"
+      dest: "/usr/local/bin/{{ item.path | basename}}"
+      state: link
+      mode: 0755
+    with_items: "{{ find.files }}"
