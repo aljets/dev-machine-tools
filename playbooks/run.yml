@@ -1,4 +1,5 @@
 - import_playbook: brew_packages.yml
+- import_playbook: fish.yml
 - import_playbook: dotfiles.yml
 - import_playbook: vim_plug.yml
 - import_playbook: tmux.yml
