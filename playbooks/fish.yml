@@ -1,0 +1,7 @@
+---
+- hosts: all
+  tasks:
+  - name: set fish as default shell
+    user:
+      name: "{{ user_name }}"
+      shell: /usr/local/bin/fish

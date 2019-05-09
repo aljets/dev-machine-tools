@@ -1,6 +1,10 @@
 ---
 - hosts: all
   tasks:
+  - name: ensure autoload directory exists
+    file:
+      path: ~/.vim/autoload
+      state: directory
   - name: set up vim-plug
     get_url:
       url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim

@@ -3,7 +3,7 @@ dotfiles_repo_dest: ~/tools/dotfiles
 dotfiles_files:
   - {file: '.vimrc', dest: ~/.vimrc}
   - {file: '.tmux.conf', dest: ~/.tmux.conf}
-  - {file: 'fish/config.fish', dest: ~/.config/fish/config.fish}
+  - {file: 'fish/config.fish', dest: ~/.config/fish/config.fish}  # requires fish to be run once before it works
   - {file: 'fish/functions', dest: ~/.config/fish/functions_from_dotfiles}
 scripts_repo: aljets/dotfiles
 scripts_repo_dest: ~/tools/dotfiles
@@ -17,3 +17,4 @@ brew_packages:
   - vim
   - tldr
   - reattach-to-user-namespace  # https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard
+user_name: ajax
