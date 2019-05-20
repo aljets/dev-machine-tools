@@ -16,5 +16,6 @@ brew_packages:
   - git
   - vim
   - tldr
+  - tmux
   - reattach-to-user-namespace  # https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard
 user_name: ajax

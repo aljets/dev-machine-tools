@@ -15,3 +15,7 @@
     shell: vim +PlugUpdate +qall
   - name: install plugins
     shell: vim +PlugInstall +qall
+  - name: create vimbackup dir
+    file:
+      path: ~/.vimbackup
+      state: directory
