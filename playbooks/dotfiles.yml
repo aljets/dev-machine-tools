@@ -4,7 +4,7 @@
   - name: clone repo that is the source of the dotfiles
     # Fails (unfortunately) if local changes
     git:
-      repo: "https://github.com/{{ dotfiles_repo }}.git"
+      repo: "{{ dotfiles_repo }}"
       dest: "{{ dotfiles_repo_dest }}"
       accept_hostkey: yes
   - name: symlink dotfiles to location per config mapping
