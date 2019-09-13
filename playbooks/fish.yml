@@ -3,3 +3,9 @@
   tasks:
   - name: install iterm2 fish shell integration
     shell: curl -L https://iterm2.com/shell_integration/fish -o ~/.iterm2_shell_integration.fish
+- hosts: all
+  tasks:
+  - name: make fish config directory
+    file:
+      path: ~/.config/fish/
+      state: directory
