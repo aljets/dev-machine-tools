@@ -1,0 +1,7 @@
+- import_playbook: apt_packages.yml
+- import_playbook: fish.yml
+- import_playbook: dotfiles.yml
+- import_playbook: vim_plug.yml
+- import_playbook: tmux.yml
+- import_playbook: frontend.yml
+- import_playbook: local_bin.yml

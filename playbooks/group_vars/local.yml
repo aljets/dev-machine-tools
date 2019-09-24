@@ -20,4 +20,12 @@ brew_packages:
   - tmux
   - reattach-to-user-namespace  # https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard
   - tfenv
+  - node
+apt_packages:
+  - fish
+  - vim
+  - npm
+  - make
+  - tldr
+  - tmux
 user_name: ajax

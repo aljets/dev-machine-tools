@@ -1,6 +1,10 @@
 ---
 - hosts: all
   tasks:
+  - name: create local bin
+    file:
+      path: ~/bin/
+      state: directory
   - name: clone repo that is the source of the dotfiles
     # Fails (unfortunately) if local changes
     git:
@@ -15,7 +19,7 @@
     # Fails (thankfully) if the script exists and is a file
     file:
       src: "{{ item.path }}"
-      dest: "/usr/local/bin/{{ item.path | basename}}"
+      dest: "~/bin/{{ item.path | basename}}"
       state: link
       mode: 0755
     with_items: "{{ find.files }}"
