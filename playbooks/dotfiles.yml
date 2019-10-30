@@ -7,6 +7,7 @@
       repo: "{{ dotfiles_repo }}"
       dest: "{{ dotfiles_repo_dest }}"
       accept_hostkey: yes
+      key_file: ~/.ssh/id_rsa
   - name: symlink dotfiles to location per config mapping
     # Fails (thankfully) if the dotfile exists and is a file
     file:

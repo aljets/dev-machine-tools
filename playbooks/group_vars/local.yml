@@ -28,4 +28,7 @@ apt_packages:
   - make
   - tldr
   - tmux
+  - default-jre  # okta
+  - python3-pip
+  - python3-venv
 user_name: ajax

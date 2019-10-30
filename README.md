@@ -23,6 +23,7 @@ Current playbooks:
 ## TODOs
 
 1. iterm profile
+1. tfenv for linux
 
 ## Use
 

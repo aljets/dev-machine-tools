@@ -11,6 +11,7 @@
       repo: "{{ scripts_repo }}"
       dest: "{{ scripts_repo_dest }}"
       accept_hostkey: yes
+      key_file: ~/.ssh/id_rsa
   - name: find all the script files
     find:
       paths: "{{ scripts_repo_dest }}/{{ scripts_repo_bin_directory}}"
