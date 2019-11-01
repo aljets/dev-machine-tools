@@ -23,7 +23,7 @@ brew_packages:
 apt_packages:
   - fish
   - silversearcher-ag
-  - vim
+  - vim-gtk  # gtk has 'clipboard' support
   - npm
   - make
   - tldr
