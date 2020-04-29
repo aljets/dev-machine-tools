@@ -20,6 +20,7 @@ brew_packages:
   - tmux
   - tfenv
   - node
+  - mosh
 apt_packages:
   - fish
   - silversearcher-ag
