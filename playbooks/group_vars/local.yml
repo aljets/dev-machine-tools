@@ -11,6 +11,7 @@ scripts_repo_dest: ~/tools/dotfiles
 scripts_repo_bin_directory: bin
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_packages:
+  - bat
   - fish
   - the_silver_searcher
   - jq
@@ -21,6 +22,7 @@ brew_packages:
   - tfenv
   - node
   - mosh
+  - pyenv  # missing in apt_packages
 apt_packages:
   - fish
   - silversearcher-ag
@@ -29,7 +31,7 @@ apt_packages:
   - make
   - tldr
   - tmux
-  - default-jre  # okta
+  - default-jre  # requirement for okta
   - python3-pip
   - python3-venv
 user_name: ajax
