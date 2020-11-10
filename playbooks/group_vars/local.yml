@@ -11,6 +11,8 @@ scripts_repo_dest: ~/tools/dotfiles
 scripts_repo_bin_directory: bin
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_packages:
+  - awscli
+  - amazon-ecs-cli  # for accessing ECS logs
   - bat
   - fish
   - the_silver_searcher
