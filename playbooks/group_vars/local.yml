@@ -4,27 +4,34 @@ dotfiles_files:
   - {file: '.vimrc', dest: ~/.vimrc}
   - {file: '.gitconfig', dest: ~/.gitconfig}
   - {file: '.tmux.conf', dest: ~/.tmux.conf}
+  - {file: '.kitty.conf', dest: ~/.config/kitty/kitty.conf}
   - {file: 'fish/config.fish', dest: ~/.config/fish/config.fish}  # requires fish to be run once before it works
   - {file: 'fish/functions', dest: ~/.config/fish/functions_from_dotfiles}
 scripts_repo: git@github.com:aljets/dotfiles.git
 scripts_repo_dest: ~/tools/dotfiles
 scripts_repo_bin_directory: bin
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
+brew_cask_packages: []
+  # doesn't seem to be discovering cask installed, erroring
+  #  - kitty  # missing in apt_packages
 brew_packages:
   - awscli
   - amazon-ecs-cli  # for accessing ECS logs
   - bat
   - fish
   - the_silver_searcher
-  - jq
   - git
-  - vim
+  - jq
+  - node
+  - parquet
+  - tfenv
   - tldr
   - tmux
-  - tfenv
-  - node
-  - mosh
+  - vim
+  - pgformatter # missing in apt_packages
   - pyenv  # missing in apt_packages
+  - rclone  # missing in apt_packages
+  - mdcat  # missing in apt_packages
 apt_packages:
   - fish
   - silversearcher-ag
