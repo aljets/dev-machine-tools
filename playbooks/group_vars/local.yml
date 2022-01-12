@@ -18,12 +18,13 @@ brew_packages:
   - awscli
   - amazon-ecs-cli  # for accessing ECS logs
   - bat
+  - fd
   - fish
   - the_silver_searcher
   - git
   - jq
   - node
-  - parquet
+  - parquet-cli
   - tfenv
   - tldr
   - tmux
