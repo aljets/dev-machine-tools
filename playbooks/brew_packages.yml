@@ -8,7 +8,7 @@
     register: brew_cask_packages
   - name: Changed cask packages
     debug:
-      msg: "{{ brew_cask_packages.changed_pkgs }}"
+      var: brew_cask_packages.changed_pkgs
   - name: update brew and install/upgrade brew packages
     homebrew:
       name: "{{ brew_packages }}"
@@ -17,5 +17,4 @@
     register: brew_packages
   - name: Changed packages
     debug:
-      msg:
-        - "{{ brew_packages.changed_pkgs }}"
+      var: brew_packages.changed_pkgs
