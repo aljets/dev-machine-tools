@@ -5,3 +5,4 @@
 - import_playbook: tmux.yml
 - import_playbook: frontend.yml
 - import_playbook: local_bin.yml
+- import_playbook: pyenv.yml

@@ -44,4 +44,6 @@ apt_packages:
   - default-jre  # requirement for okta
   - python3-pip
   - python3-venv
+python_versions:
+  - {version: '3.6.15', venv: 'py36'}
 user_name: ajax
