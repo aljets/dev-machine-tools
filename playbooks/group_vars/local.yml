@@ -22,6 +22,7 @@ brew_packages:
   - fish
   - the_silver_searcher
   - git
+  - java  # for okta cli :\
   - jq
   - node
   - parquet-cli
