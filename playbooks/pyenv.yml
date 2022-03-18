@@ -9,10 +9,17 @@
     ansible.builtin.file:
       path: ~/.virtualenvs
       state: directory
+  # Consider doing all the below in a cleaner way
   - name: Create venv per python version
     ansible.builtin.shell:
       cmd: |
         pyenv shell {{ item.version }}
         python -m venv ~/.virtualenvs/{{ item.venv }}
       creates: ~/.virtualenvs/{{ item.venv }}
+    with_items: "{{ python_versions }}"
+  - name: Install python modules
+    ansible.builtin.shell:
+      cmd: |
+        source ~/.virtualenvs/{{ item.venv }}/bin/activate
+        pip install isort flake8 mypy
     with_items: "{{ python_versions }}"
