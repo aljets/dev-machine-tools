@@ -21,6 +21,7 @@ brew_packages:
   - fd
   - fish
   - the_silver_searcher
+  - fswatch  # for swatching files to sync pipelines
   - git
   - java  # for okta cli :\
   - jq
