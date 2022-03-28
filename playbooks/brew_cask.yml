@@ -1,0 +1,16 @@
+# Ansible brew cask stuff has some issues, so just do it myself
+---
+- hosts: all
+  tasks:
+  - name: Install kitty
+    register: install_output
+    ansible.builtin.shell:
+      cmd: brew install --cask kitty
+    changed_when: "'already installed' not in install_output.stderr"
+  - name: Install font-fira-code
+    register: install_output
+    ansible.builtin.shell:
+      cmd: |
+        brew tap homebrew/cask-fonts
+        brew install --cask font-fira-code
+    changed_when: "'already installed' not in install_output.stderr"

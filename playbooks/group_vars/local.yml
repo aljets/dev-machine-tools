@@ -12,8 +12,7 @@ scripts_repo_dest: ~/tools/dotfiles
 scripts_repo_bin_directory: bin
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_cask_packages: []
-  # doesn't seem to be discovering cask installed, erroring
-  #  - kitty  # missing in apt_packages
+  # doesn't seem to be discovering cask installed, erroring, so had to make brew_cask playbook
 brew_packages:
   - awscli
   - amazon-ecs-cli  # for accessing ECS logs
@@ -48,4 +47,8 @@ apt_packages:
   - python3-venv
 python_versions:
   - {version: '3.6.15', venv: 'py36'}
+python_packages:
+  - isort
+  - flake8
+  - mypy
 user_name: ajax
