@@ -2,9 +2,11 @@
 - hosts: all
   tasks:
   - name: Install python version
+    register: install_output
     ansible.builtin.shell:
       cmd: pyenv versions | grep "{{ item.version }}" || pyenv install {{ item.version }}
     with_items: "{{ python_versions }}"
+    changed_when: "'Successfully installed' in install_output.stdout"
   - name: Create ~/.virtualenvs
     ansible.builtin.file:
       path: ~/.virtualenvs
