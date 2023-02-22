@@ -1,7 +1,7 @@
 # Ansible Playbook(s) for Dev Setup
 
 Opinionated playbooks to set up devstack. Super simple playbooks that do very
-little, but it adds up.
+little, but it adds up. Requires `xcode-select --install`.
 
 Current playbooks:
 
@@ -19,11 +19,6 @@ Current playbooks:
    1. installs `node` and `n`
 1. `local_bin`
    1. lays down configured executables from github repo to /usr/local/bin
-
-## TODOs
-
-1. iterm profile
-1. tfenv for linux
 
 ## Use
 

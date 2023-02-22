@@ -11,7 +11,10 @@ scripts_repo: git@github.com:aljets/dotfiles.git
 scripts_repo_dest: ~/tools/dotfiles
 scripts_repo_bin_directory: bin
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
-brew_cask_packages: []
+brew_cask_packages:
+  - {package: 'kitty'}
+  - {package: 'font-fira-code', repo: 'homebrew/cask-fonts'}
+  - {package: 'hiddenbar'}
   # doesn't seem to be discovering cask installed, erroring, so had to make brew_cask playbook
 brew_packages:
   - awscli
@@ -28,6 +31,7 @@ brew_packages:
   - parquet-cli
   - tfenv
   - tldr
+  - tree
   - tmux
   - vim
   - pgformatter # missing in apt_packages

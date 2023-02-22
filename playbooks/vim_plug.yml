@@ -19,12 +19,14 @@
     changed_when: result.stdout != ''
   - name: update plugins
     shell: vim +PlugUpdate +'%w /tmp/vim-plug.log' +qall > /dev/null && cat /tmp/vim-plug.log
+    changed_when: result.stdout != ''
   - name: log if upgraded plugins
     shell: cat /tmp/vim-plug.log
     register: result
     changed_when: result.stdout != ''
   - name: install plugins
     shell: vim +PlugInstall +'%w /tmp/vim-plug.log' +qall >/dev/null && cat /tmp/vim-plug.log
+    changed_when: result.stdout != ''
   - name: log if installed new plugins
     shell: cat /tmp/vim-plug.log
     register: result

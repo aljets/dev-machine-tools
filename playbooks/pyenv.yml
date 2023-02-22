@@ -15,6 +15,7 @@
   - name: Create venv per python version
     ansible.builtin.shell:
       cmd: |
+        eval "$(pyenv init -)"
         pyenv shell {{ item.version }}
         python -m venv ~/.virtualenvs/{{ item.venv }}
       creates: ~/.virtualenvs/{{ item.venv }}

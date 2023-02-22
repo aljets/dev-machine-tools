@@ -2,15 +2,11 @@
 ---
 - hosts: all
   tasks:
-  - name: Install kitty
-    register: install_output
-    ansible.builtin.shell:
-      cmd: brew install --cask kitty
-    changed_when: "'already installed' not in install_output.stderr"
-  - name: Install font-fira-code
+  - name: Install brew casks
     register: install_output
     ansible.builtin.shell:
       cmd: |
-        brew tap homebrew/cask-fonts
-        brew install --cask font-fira-code
+        {{ ('brew tap ' + item.repo) if item.repo is defined }}
+        brew install --cask {{ item.package }}
     changed_when: "'already installed' not in install_output.stderr"
+    loop: "{{ brew_cask_packages }}"

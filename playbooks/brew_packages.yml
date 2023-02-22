@@ -1,14 +1,14 @@
 ---
 - hosts: all
   tasks:
-  - name:  install/upgrade brew cask packages
-    homebrew:
-      name: "{{ brew_cask_packages }}"
-      state: latest
-    register: brew_cask_packages
-  - name: Changed cask packages
-    debug:
-      var: brew_cask_packages.changed_pkgs
+  #- name:  install/upgrade brew cask packages
+  #  homebrew:
+  #    name: "{{ brew_cask_packages }}"
+  #    state: latest
+  #  register: brew_cask_packages
+  #- name: Changed cask packages
+  #  debug:
+  #    var: brew_cask_packages.changed_pkgs
   - name: update brew and install/upgrade brew packages
     homebrew:
       name: "{{ brew_packages }}"
