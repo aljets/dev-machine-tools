@@ -32,13 +32,15 @@ brew_packages:
   - tfenv
   - tldr
   - tree
-  - tmux
   - vim
   - pgformatter # missing in apt_packages
   - pyenv  # missing in apt_packages
   - rclone  # missing in apt_packages
   - mdcat  # missing in apt_packages
   - cheat # experimental
+  - usql # universal sql client
+  - xsv
+  - less # for version 600+, which adds header option for pinning headers
 apt_packages:
   - fish
   - silversearcher-ag
