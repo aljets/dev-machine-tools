@@ -38,6 +38,7 @@ brew_packages:
   - pyenv  # missing in apt_packages
   - rclone  # missing in apt_packages
   - mdcat  # missing in apt_packages
+  - cheat # experimental
 apt_packages:
   - fish
   - silversearcher-ag
