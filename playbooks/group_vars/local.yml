@@ -13,19 +13,18 @@ scripts_repo_bin_directory: bin
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_cask_packages:
   - {package: 'kitty'}
-  - {package: 'font-fira-code', repo: 'homebrew/cask-fonts'}
-  - {package: 'hiddenbar'}
+  - {package: 'font-fira-code'}
   # doesn't seem to be discovering cask installed, erroring, so had to make brew_cask playbook
 brew_packages:
   - awscli
-  - amazon-ecs-cli  # for accessing ECS logs
+  #- amazon-ecs-cli  # for accessing ECS logs
   - bat
   - fd
   - fish
   - the_silver_searcher
   - fswatch  # for swatching files to sync pipelines
   - git
-  - java  # for okta cli :\
+  # - java  # for okta cli :\ and trino
   - jq
   - node
   - parquet-cli
@@ -33,10 +32,10 @@ brew_packages:
   - tldr
   - tree
   - vim
-  - pgformatter # missing in apt_packages
-  - pyenv  # missing in apt_packages
-  - rclone  # missing in apt_packages
-  - mdcat  # missing in apt_packages
+  - pgformatter
+  - pyenv
+  - rclone
+  - mdcat
   - cheat # experimental
   - usql # universal sql client
   - xsv
@@ -49,11 +48,10 @@ apt_packages:
   - make
   - tldr
   - tmux
-  - default-jre  # requirement for okta
   - python3-pip
   - python3-venv
 python_versions:
-  - {version: '3.9.11', venv: 'py39'}
+  - {version: '3.12.12', venv: 'py312'}
 python_packages:
   - isort
   - flake8

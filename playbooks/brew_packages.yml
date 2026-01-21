@@ -9,12 +9,15 @@
   #- name: Changed cask packages
   #  debug:
   #    var: brew_cask_packages.changed_pkgs
-  - name: update brew and install/upgrade brew packages
+  - name: update brew
     homebrew:
-      name: "{{ brew_packages }}"
-      state: latest
       update_homebrew: yes
-    register: brew_packages
+  - name: install/upgrade brew packages
+    homebrew:
+      name: "{{ item }}"
+      state: latest
+    loop: "{{ brew_packages }}"
+    register: brew_packages_result
   - name: Changed packages
     debug:
-      var: brew_packages.changed_pkgs
+      msg: "{{ brew_packages_result.results | selectattr('changed', 'equalto', true) | map(attribute='item') | list }}"
