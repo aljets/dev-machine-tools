@@ -14,10 +14,10 @@
       update_homebrew: yes
   - name: install/upgrade brew packages
     homebrew:
-      name: "{{ item }}"
+      name: "{{ brew_packages }}"
       state: latest
-    loop: "{{ brew_packages }}"
     register: brew_packages_result
   - name: Changed packages
     debug:
-      msg: "{{ brew_packages_result.results | selectattr('changed', 'equalto', true) | map(attribute='item') | list }}"
+      var: brew_packages_result.changed_pkgs
+    when: brew_packages_result.changed_pkgs is defined

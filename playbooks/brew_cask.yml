@@ -7,6 +7,6 @@
     ansible.builtin.shell:
       cmd: |
         {{ ('brew tap ' + item.repo) if item.repo is defined }}
-        brew install --cask {{ item.package }}
+        brew install {{ '' if item.cask is defined and not item.cask else '--cask ' }}{{ item.package }}
     changed_when: "'already installed' not in install_output.stderr"
     loop: "{{ brew_cask_packages }}"

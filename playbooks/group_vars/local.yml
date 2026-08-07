@@ -14,17 +14,18 @@ tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_cask_packages:
   - {package: 'kitty'}
   - {package: 'font-fira-code'}
+  - {package: 'obsidian'}
+  - {package: 'swiftbar'}  # menu bar host for the claude-notify plugin
+  - {repo: 'atlassian/homebrew-acli', package: acli, cask: false}
   # doesn't seem to be discovering cask installed, erroring, so had to make brew_cask playbook
 brew_packages:
   - awscli
-  #- amazon-ecs-cli  # for accessing ECS logs
   - bat
   - fd
   - fish
   - the_silver_searcher
   - fswatch  # for swatching files to sync pipelines
   - git
-  # - java  # for okta cli :\ and trino
   - jq
   - node
   - parquet-cli
@@ -40,6 +41,7 @@ brew_packages:
   - usql # universal sql client
   - xsv
   - less # for version 600+, which adds header option for pinning headers
+  - claude-code
 apt_packages:
   - fish
   - silversearcher-ag
@@ -56,4 +58,8 @@ python_packages:
   - isort
   - flake8
   - mypy
+claude_plugin_marketplaces:
+  - anthropics/skills
+claude_plugins:
+  - example-skills@anthropic-agent-skills
 user_name: ajax

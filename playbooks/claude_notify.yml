@@ -1,0 +1,110 @@
+---
+# Menu bar indicator for Claude Code sessions waiting on approval.
+# See files/claude-notify/README.md for how the pieces fit together.
+- hosts: all
+  vars:
+    home: "{{ lookup('env', 'HOME') }}"
+    src: "{{ playbook_dir }}/files/claude-notify"
+    # Visible, not a dotfolder: SwiftBar's first-run picker is an NSOpenPanel
+    # that hides dotfolders, and it prompts even when the default below is
+    # pre-seeded, so the path has to be navigable by hand at least once.
+    swiftbar_plugin_dir: "{{ lookup('env', 'HOME') }}/tools/swiftbar-plugins"
+    claude_settings: "{{ lookup('env', 'HOME') }}/.claude/settings.json"
+    claude_notify_hooks:
+      Notification:
+        - hooks:
+            - type: command
+              command: "{{ lookup('env', 'HOME') }}/bin/claude-notify-hook"
+      # PostToolUse is the earliest signal that a prompt was approved; Claude
+      # Code has no permission-decision hook, and PreToolUse runs before the
+      # prompt is shown. Both fire on every tool call, so the script exits
+      # immediately when there is no state to clear.
+      PreToolUse:
+        - hooks:
+            - type: command
+              command: "{{ lookup('env', 'HOME') }}/bin/claude-notify-hook"
+      PostToolUse:
+        - hooks:
+            - type: command
+              command: "{{ lookup('env', 'HOME') }}/bin/claude-notify-hook"
+      Stop:
+        - hooks:
+            - type: command
+              command: "{{ lookup('env', 'HOME') }}/bin/claude-notify-hook"
+      UserPromptSubmit:
+        - hooks:
+            - type: command
+              command: "{{ lookup('env', 'HOME') }}/bin/claude-notify-hook"
+      SessionEnd:
+        - hooks:
+            - type: command
+              command: "{{ lookup('env', 'HOME') }}/bin/claude-notify-hook"
+
+  tasks:
+    - name: create directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "{{ home }}/bin"
+        - "{{ home }}/.claude/notif-state"
+        - "{{ swiftbar_plugin_dir }}"
+
+    - name: make the scripts executable in the repo
+      file:
+        path: "{{ src }}/{{ item }}"
+        mode: "0755"
+      loop:
+        - claude-notify-hook.sh
+        - claude-notify-action.sh
+        - claude-notify.30s.sh
+
+    # Symlinks rather than copies so editing the repo takes effect immediately.
+    - name: symlink hook and action into ~/bin
+      file:
+        src: "{{ src }}/{{ item }}.sh"
+        dest: "{{ home }}/bin/{{ item }}"
+        state: link
+      loop:
+        - claude-notify-hook
+        - claude-notify-action
+
+    - name: symlink the swiftbar plugin
+      file:
+        src: "{{ src }}/claude-notify.30s.sh"
+        dest: "{{ swiftbar_plugin_dir }}/claude-notify.30s.sh"
+        state: link
+
+    # Must run before SwiftBar's first launch, otherwise it puts up a "Set
+    # SwiftBar Plugins Location" panel. Bundle id is com.ameba.SwiftBar (not
+    # com.ambertch). SwiftBar writes both keys and gates the onboarding panel on
+    # PluginDirectory, so seeding only PluginDirectoryPath still prompts. No
+    # security-scoped bookmark is involved, so plain defaults are enough.
+    - name: point swiftbar at the plugin directory
+      command: defaults write com.ameba.SwiftBar {{ item }} -string "{{ swiftbar_plugin_dir }}"
+      changed_when: false
+      loop:
+        - PluginDirectory
+        - PluginDirectoryPath
+
+    - name: make swiftbar chmod +x plugins it finds
+      command: defaults write com.ameba.SwiftBar MakePluginExecutable -bool true
+      changed_when: false
+
+    - name: read existing claude settings
+      slurp:
+        src: "{{ claude_settings }}"
+      register: claude_settings_raw
+      failed_when: false
+
+    - name: register the notification hooks in claude settings
+      copy:
+        # combine() replaces the whole `hooks` key. If other hooks are ever
+        # added by hand, fold them into claude_notify_hooks above instead.
+        content: >-
+          {{ (claude_settings_raw.content | b64decode | from_json)
+             | combine({'hooks': claude_notify_hooks})
+             | to_nice_json(indent=2) }}
+        dest: "{{ claude_settings }}"
+        backup: yes
+      when: claude_settings_raw.content is defined

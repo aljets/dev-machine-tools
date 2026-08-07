@@ -1,0 +1,11 @@
+---
+- hosts: all
+  tasks:
+  - name: add claude plugin marketplaces
+    shell: claude plugin marketplace add {{ item }}
+    loop: "{{ claude_plugin_marketplaces }}"
+    when: claude_plugin_marketplaces is defined
+  - name: install/update claude plugins
+    shell: claude plugin install {{ item }} && claude plugin update {{ item }}
+    loop: "{{ claude_plugins }}"
+    when: claude_plugins is defined
