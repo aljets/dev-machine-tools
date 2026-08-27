@@ -58,6 +58,21 @@ environment, via `kitten @`. Requires `allow_remote_control yes` and a
 `listen_on` in `kitty.conf`. If the session is inside tmux, `TMUX_PANE` is
 recorded too and `tmux send-keys` is used instead.
 
+## Launch at login
+
+SwiftBar 2.x drives its own "Launch at Login" through `SMAppService`, which has
+no defaults key and no CLI, so the playbook installs
+`~/Library/LaunchAgents/local.swiftbar.plist` instead. It runs `open -a
+SwiftBar`, which is a no-op when the app is already up, so it cannot collide with
+SwiftBar's own toggle.
+
+    launchctl print gui/$(id -u)/local.swiftbar
+
+If the menu bar item is missing while SwiftBar is running, check that
+`defaults read com.ameba.SwiftBar` has `NSStatusItem VisibleCC
+claude-notify.30s.sh = 1` — macOS records a hidden item there and SwiftBar
+looks otherwise identical to a plugin that never ran.
+
 ## Debugging
 
 `~/.claude/notif-state/debug.log` keeps the last 200 raw hook payloads. The

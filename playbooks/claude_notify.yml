@@ -91,6 +91,37 @@
       command: defaults write com.ameba.SwiftBar MakePluginExecutable -bool true
       changed_when: false
 
+    # SwiftBar 2.x drives its own "Launch at Login" through SMAppService, which
+    # has no defaults key and no CLI, so we register our own agent instead. It
+    # shells out to `open` rather than the binary: `open` is a no-op when the
+    # app is already running, so this cannot race SwiftBar's own toggle into
+    # two menu bar icons.
+    - name: launch swiftbar at login
+      copy:
+        dest: "{{ home }}/Library/LaunchAgents/local.swiftbar.plist"
+        content: |
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>Label</key><string>local.swiftbar</string>
+            <key>ProgramArguments</key>
+            <array>
+              <string>/usr/bin/open</string>
+              <string>-a</string>
+              <string>/Applications/SwiftBar.app</string>
+            </array>
+            <key>RunAtLoad</key><true/>
+          </dict>
+          </plist>
+      register: swiftbar_agent
+
+    - name: load the swiftbar agent
+      shell: launchctl bootstrap gui/$(id -u) {{ home }}/Library/LaunchAgents/local.swiftbar.plist
+      when: swiftbar_agent.changed
+      # Already-bootstrapped is exit 5; nothing to do in that case.
+      failed_when: false
+
     - name: read existing claude settings
       slurp:
         src: "{{ claude_settings }}"
