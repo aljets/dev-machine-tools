@@ -58,8 +58,26 @@ python_packages:
   - isort
   - flake8
   - mypy
+editor_mode: vim
+effort_level: high
+model: claude-fable-5[1m]
+allowed_tools:
+  - "Bash(jq *)"
+  - "Bash(ag *)"
+  - "Bash(ls *)"
+  - "Bash(find *)"
+  - "Bash(grep *)"
+  - "Read(//tmp/**)"
+
+mcp_servers:
+  - tableau https://mcp.tableau.com
+
 claude_plugin_marketplaces:
   - anthropics/skills
+  - anthropics/claude-plugins-official
 claude_plugins:
   - example-skills@anthropic-agent-skills
+  - frontend-design@claude-plugins-official
+  - swift-lsp@claude-plugins-official
+claude_extra_vars: ~/repos/dotfiles/ansible/vars.yml
 user_name: ajax

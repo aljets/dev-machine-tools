@@ -1,11 +1,45 @@
 ---
 - hosts: all
   tasks:
+  - name: include extra plugin vars if present
+    include_vars: "{{ claude_extra_vars }}"
+    failed_when: false
+  - name: merge claude settings
+    shell: >
+      jq \
+        --argjson allowed '{{ (allowed_tools | default([])) + (private_allowed_tools | default([])) | to_json }}' \
+        --arg editor '{{ editor_mode | default("vim") }}' \
+        --arg effort '{{ effort_level | default("high") }}' \
+        --arg model '{{ model | default("") }}' \
+        '.permissions.allow = (.permissions.allow + $allowed | unique) |
+         .editorMode = $editor |
+         .effortLevel = $effort |
+         if $model != "" then .model = $model else . end'
+        ~/.claude/settings.json
+        > /tmp/claude_settings.json
+        && mv /tmp/claude_settings.json ~/.claude/settings.json
+    when: allowed_tools is defined or private_allowed_tools is defined
+  - name: add mcp servers
+    shell: claude mcp add --transport http --scope user {{ item }}
+    loop: "{{ mcp_servers }}"
+    when: mcp_servers is defined
+  - name: add private mcp servers
+    shell: claude mcp add --transport http --scope user {{ item }}
+    loop: "{{ private_mcp_servers }}"
+    when: private_mcp_servers is defined
   - name: add claude plugin marketplaces
     shell: claude plugin marketplace add {{ item }}
     loop: "{{ claude_plugin_marketplaces }}"
     when: claude_plugin_marketplaces is defined
+  - name: add private claude plugin marketplaces
+    shell: claude plugin marketplace add {{ item }}
+    loop: "{{ private_claude_plugin_marketplaces }}"
+    when: private_claude_plugin_marketplaces is defined
   - name: install/update claude plugins
     shell: claude plugin install {{ item }} && claude plugin update {{ item }}
     loop: "{{ claude_plugins }}"
     when: claude_plugins is defined
+  - name: install/update private claude plugins
+    shell: claude plugin install {{ item }} && claude plugin update {{ item }}
+    loop: "{{ private_claude_plugins }}"
+    when: private_claude_plugins is defined

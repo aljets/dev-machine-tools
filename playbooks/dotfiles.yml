@@ -15,3 +15,13 @@
       dest: "{{ item.dest }}"
       state: link
     with_items: "{{ dotfiles_files }}"
+  - name: include private dotfiles vars if present
+    include_vars: "{{ claude_extra_vars }}"
+    failed_when: false
+  - name: symlink private dotfiles
+    file:
+      src: "{{ item.file }}"
+      dest: "{{ item.dest }}"
+      state: link
+    with_items: "{{ private_dotfiles_files }}"
+    when: private_dotfiles_files is defined
