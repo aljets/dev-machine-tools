@@ -96,6 +96,10 @@
     # shells out to `open` rather than the binary: `open` is a no-op when the
     # app is already running, so this cannot race SwiftBar's own toggle into
     # two menu bar icons.
+    - name: create LaunchAgents directory
+      file:
+        path: "{{ home }}/Library/LaunchAgents"
+        state: directory
     - name: launch swiftbar at login
       copy:
         dest: "{{ home }}/Library/LaunchAgents/local.swiftbar.plist"
