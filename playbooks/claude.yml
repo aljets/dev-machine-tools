@@ -1,7 +1,7 @@
 ---
 - hosts: all
   environment:
-    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ lookup('env', 'HOME') }}/.local/bin:{{ lookup('env', 'PATH') }}"
   tasks:
   - name: install claude code
     shell: curl -fsSL https://claude.ai/install.sh | bash
