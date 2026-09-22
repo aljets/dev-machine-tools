@@ -23,6 +23,12 @@
   - name: include private dotfiles vars if present
     include_vars: "{{ claude_extra_vars }}"
     failed_when: false
+  - name: create parent directories for private dotfiles
+    file:
+      path: "{{ item.dest | dirname }}"
+      state: directory
+    with_items: "{{ private_dotfiles_files }}"
+    when: private_dotfiles_files is defined
   - name: symlink private dotfiles
     file:
       src: "{{ item.file }}"
