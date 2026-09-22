@@ -30,10 +30,16 @@
     shell: claude mcp add --transport http --scope user {{ item }}
     loop: "{{ mcp_servers }}"
     when: mcp_servers is defined
+    register: mcp_add
+    changed_when: mcp_add.rc == 0
+    failed_when: mcp_add.rc != 0 and 'already exists' not in mcp_add.stderr
   - name: add private mcp servers
     shell: claude mcp add --transport http --scope user {{ item }}
     loop: "{{ private_mcp_servers }}"
     when: private_mcp_servers is defined
+    register: private_mcp_add
+    changed_when: private_mcp_add.rc == 0
+    failed_when: private_mcp_add.rc != 0 and 'already exists' not in private_mcp_add.stderr
   - name: add claude plugin marketplaces
     shell: claude plugin marketplace add {{ item }}
     loop: "{{ claude_plugin_marketplaces }}"
