@@ -4,6 +4,11 @@
   - name: include extra plugin vars if present
     include_vars: "{{ claude_extra_vars }}"
     failed_when: false
+  - name: seed claude settings if missing
+    copy:
+      content: "{}"
+      dest: ~/.claude/settings.json
+      force: false
   - name: merge claude settings
     shell: >
       jq \
