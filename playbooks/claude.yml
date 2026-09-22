@@ -10,19 +10,21 @@
       dest: ~/.claude/settings.json
       force: false
   - name: merge claude settings
-    shell: >
+    shell: |
       jq \
-        --argjson allowed '{{ (allowed_tools | default([])) + (private_allowed_tools | default([])) | to_json }}' \
+        --argjson allowed "$ALLOWED_TOOLS" \
         --arg editor '{{ editor_mode | default("vim") }}' \
         --arg effort '{{ effort_level | default("high") }}' \
         --arg model '{{ model | default("") }}' \
         '.permissions.allow = (.permissions.allow + $allowed | unique) |
          .editorMode = $editor |
          .effortLevel = $effort |
-         if $model != "" then .model = $model else . end'
-        ~/.claude/settings.json
-        > /tmp/claude_settings.json
+         if $model != "" then .model = $model else . end' \
+        ~/.claude/settings.json \
+        > /tmp/claude_settings.json \
         && mv /tmp/claude_settings.json ~/.claude/settings.json
+    environment:
+      ALLOWED_TOOLS: "{{ ((allowed_tools | default([])) + (private_allowed_tools | default([]))) | to_json }}"
     when: allowed_tools is defined or private_allowed_tools is defined
   - name: add mcp servers
     shell: claude mcp add --transport http --scope user {{ item }}
