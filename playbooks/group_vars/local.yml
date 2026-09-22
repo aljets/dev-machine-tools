@@ -16,6 +16,7 @@ brew_cask_packages:
   - {package: 'font-fira-code'}
   - {package: 'obsidian'}
   - {package: 'swiftbar'}  # menu bar host for the claude-notify plugin
+  - {package: 'rectangle'}
   - {repo: 'atlassian/homebrew-acli', package: acli, cask: false}
   - {repo: 'xo/xo', package: usql, cask: false}  # universal sql client
   # doesn't seem to be discovering cask installed, erroring, so had to make brew_cask playbook

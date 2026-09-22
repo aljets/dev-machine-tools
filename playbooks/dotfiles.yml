@@ -20,6 +20,18 @@
       dest: "{{ item.dest }}"
       state: link
     with_items: "{{ dotfiles_files }}"
+  # Keys in the repo plist overwrite the app's values; other keys are left alone.
+  # Rectangle holds settings in memory, so quit it around the writes.
+  - name: apply rectangle settings
+    shell: |
+      set -e
+      plist={{ dotfiles_repo_dest }}/rectangle.plist
+      running=$(pgrep -x Rectangle || true)
+      if [ -n "$running" ]; then osascript -e 'quit app "Rectangle"'; sleep 1; fi
+      for key in $(plutil -convert json -o - "$plist" | jq -r 'keys[]'); do
+        defaults write com.knollsoft.Rectangle "$key" "$(plutil -extract "$key" xml1 -o - "$plist")"
+      done
+      if [ -n "$running" ]; then open -a Rectangle; fi
   - name: include private dotfiles vars if present
     include_vars: "{{ claude_extra_vars }}"
     failed_when: false
