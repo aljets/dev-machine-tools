@@ -7,3 +7,28 @@
     file:
       path: ~/.config/fish/
       state: directory
+  - name: read login shell
+    command: dscl . -read /Users/{{ lookup('env', 'USER') }} UserShell
+    register: login_shell
+    changed_when: false
+  - name: set fish as login shell
+    when: fish_path not in login_shell.stdout
+    vars:
+      fish_path: /opt/homebrew/bin/fish
+      ansible_become_password: "{{ sudo_prompt.user_input }}"
+    block:
+    - name: ask for sudo password
+      pause:
+        prompt: "sudo password (to set fish as login shell)"
+        echo: false
+      register: sudo_prompt
+    - name: allow fish as a login shell
+      become: true
+      lineinfile:
+        path: /etc/shells
+        line: "{{ fish_path }}"
+    - name: set login shell
+      become: true
+      user:
+        name: "{{ lookup('env', 'USER') }}"
+        shell: "{{ fish_path }}"
