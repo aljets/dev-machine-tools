@@ -38,7 +38,7 @@ brew_packages:
   - rclone
   - mdcat
   - cheat # experimental
-  - usql # universal sql client
+  - xo/xo/usql # universal sql client
   - xsv
   - less # for version 600+, which adds header option for pinning headers
   - claude-code
