@@ -42,7 +42,6 @@ brew_packages:
   - cheat # experimental
   - xsv
   - less # for version 600+, which adds header option for pinning headers
-  - claude-code
 apt_packages:
   - fish
   - silversearcher-ag

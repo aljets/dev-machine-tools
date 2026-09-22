@@ -1,6 +1,12 @@
 ---
 - hosts: all
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
   tasks:
+  - name: install claude code
+    shell: curl -fsSL https://claude.ai/install.sh | bash
+    args:
+      creates: ~/.local/bin/claude
   - name: include extra plugin vars if present
     include_vars: "{{ claude_extra_vars }}"
     failed_when: false
