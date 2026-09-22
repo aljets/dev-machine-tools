@@ -17,6 +17,7 @@ brew_cask_packages:
   - {package: 'obsidian'}
   - {package: 'swiftbar'}  # menu bar host for the claude-notify plugin
   - {repo: 'atlassian/homebrew-acli', package: acli, cask: false}
+  - {repo: 'xo/xo', package: usql, cask: false}  # universal sql client
   # doesn't seem to be discovering cask installed, erroring, so had to make brew_cask playbook
 brew_packages:
   - awscli
@@ -38,7 +39,6 @@ brew_packages:
   - rclone
   - mdcat
   - cheat # experimental
-  - xo/xo/usql # universal sql client
   - xsv
   - less # for version 600+, which adds header option for pinning headers
   - claude-code
