@@ -1,0 +1,26 @@
+---
+- hosts: all
+  tasks:
+  - name: show battery percentage in menu bar
+    shell: |
+      set -e
+      current=$(defaults -currentHost read com.apple.controlcenter BatteryShowPercentage 2>/dev/null || echo missing)
+      if [ "$current" != "1" ]; then
+        defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
+        killall ControlCenter
+        echo changed
+      fi
+    register: battery_percentage
+    changed_when: "'changed' in battery_percentage.stdout"
+  # hidutil mappings reset on reboot, so a LaunchAgent reapplies at login.
+  # RunAtLoad also applies it immediately when the agent is (re)bootstrapped below.
+  - name: install caps-lock-to-escape launch agent
+    copy:
+      src: files/com.aljets.caps-to-escape.plist
+      dest: ~/Library/LaunchAgents/com.aljets.caps-to-escape.plist
+    register: caps_agent
+  - name: load caps-lock-to-escape launch agent
+    shell: |
+      launchctl bootout gui/$(id -u)/com.aljets.caps-to-escape 2>/dev/null || true
+      launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.aljets.caps-to-escape.plist
+    when: caps_agent is changed
