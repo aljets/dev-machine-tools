@@ -7,6 +7,7 @@ dotfiles_files:
   - {file: '.kitty.conf', dest: ~/.config/kitty/kitty.conf}
   - {file: 'fish/config.fish', dest: ~/.config/fish/config.fish}  # requires fish to be run once before it works
   - {file: 'fish/functions', dest: ~/.config/fish/functions_from_dotfiles}
+git_personal_config_dest: ~/tools/.gitconfig_personal
 scripts_repo: git@github.com:aljets/dotfiles.git
 scripts_repo_dest: ~/tools/dotfiles
 scripts_repo_bin_directory: bin

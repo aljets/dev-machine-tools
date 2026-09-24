@@ -41,6 +41,15 @@
       state: directory
     with_items: "{{ private_dotfiles_files }}"
     when: private_dotfiles_files is defined
+  - name: write personal git identity included by .gitconfig
+    copy:
+      dest: "{{ git_personal_config_dest }}"
+      force: no
+      content: |
+        [user]
+            name = {{ git_personal_name }}
+            email = {{ git_personal_email }}
+    when: git_personal_email is defined
   - name: symlink private dotfiles
     file:
       src: "{{ item.file }}"
