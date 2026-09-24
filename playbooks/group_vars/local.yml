@@ -11,6 +11,9 @@ git_personal_config_dest: ~/tools/.gitconfig_personal
 scripts_repo: git@github.com:aljets/dotfiles.git
 scripts_repo_dest: ~/tools/dotfiles
 scripts_repo_bin_directory: bin
+notes_repo: git@github.com:aljets/notes.git
+notes_dest: ~/notes
+templater_version: "2.20.5"
 tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
 brew_cask_packages:
   - {package: 'kitty'}

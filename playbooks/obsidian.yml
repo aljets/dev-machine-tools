@@ -1,0 +1,24 @@
+---
+- hosts: all
+  tasks:
+  - name: clone notes vault
+    git:
+      repo: "{{ notes_repo }}"
+      dest: "{{ notes_dest }}"
+      accept_hostkey: yes
+      update: no
+  - name: download templater plugin code (not tracked in the vault repo)
+    get_url:
+      url: "https://github.com/SilentVoid13/Templater/releases/download/{{ templater_version }}/main.js"
+      dest: "{{ notes_dest }}/.obsidian/plugins/templater-obsidian/main.js"
+  - name: create obsidian app support directory
+    file:
+      path: ~/Library/Application Support/obsidian
+      state: directory
+  # Obsidian owns this file after first launch, so only seed it.
+  - name: register notes as an obsidian vault
+    copy:
+      dest: ~/Library/Application Support/obsidian/obsidian.json
+      force: false
+      content: |
+        {"vaults": {"{{ notes_dest | expanduser | hash('md5') | truncate(16, True, '') }}": {"path": "{{ notes_dest | expanduser }}", "open": true}}}

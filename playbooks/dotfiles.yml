@@ -7,7 +7,6 @@
       repo: "{{ dotfiles_repo }}"
       dest: "{{ dotfiles_repo_dest }}"
       accept_hostkey: yes
-      key_file: ~/.ssh/id_rsa
   - name: create parent directories for dotfiles
     file:
       path: "{{ item.dest | dirname }}"
