@@ -7,10 +7,33 @@
       dest: "{{ notes_dest }}"
       accept_hostkey: yes
       update: no
-  - name: download templater plugin code (not tracked in the vault repo)
+    when: notes_repo is defined
+  - name: create notes vault directory
+    file:
+      path: "{{ notes_dest }}"
+      state: directory
+  # Repo keys win in each .obsidian json; other keys are left alone. Arrays
+  # (community-plugins.json) are unioned. Templates are copied over.
+  - name: merge shared obsidian settings and templates from dotfiles
+    shell: |
+      set -e
+      src={{ (dotfiles_repo_dest ~ '/obsidian/vault') | expanduser }}
+      dest={{ notes_dest | expanduser }}
+      rsync -rc --exclude '*.json' --out-format='%n' "$src/" "$dest/"
+      cd "$src"
+      find . -name '*.json' | while read -r f; do
+        mkdir -p "$dest/$(dirname "$f")"
+        if [ ! -f "$dest/$f" ]; then cp "$f" "$dest/$f"; echo "created $f"; continue; fi
+        merged=$(jq -s 'if (.[1] | type) == "array" then (.[0] + .[1] | unique) else .[0] * .[1] end' "$dest/$f" "$f")
+        if [ "$merged" != "$(jq . "$dest/$f")" ]; then printf '%s\n' "$merged" > "$dest/$f"; echo "merged $f"; fi
+      done
+    register: obsidian_merge
+    changed_when: obsidian_merge.stdout != ""
+  - name: download templater plugin files missing from the vault
     get_url:
-      url: "https://github.com/SilentVoid13/Templater/releases/download/{{ templater_version }}/main.js"
-      dest: "{{ notes_dest }}/.obsidian/plugins/templater-obsidian/main.js"
+      url: "https://github.com/SilentVoid13/Templater/releases/download/{{ templater_version }}/{{ item }}"
+      dest: "{{ notes_dest }}/.obsidian/plugins/templater-obsidian/{{ item }}"
+    loop: [main.js, manifest.json, styles.css]
   - name: create obsidian app support directory
     file:
       path: ~/Library/Application Support/obsidian
