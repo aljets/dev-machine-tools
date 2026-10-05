@@ -126,20 +126,17 @@
       # Already-bootstrapped is exit 5; nothing to do in that case.
       failed_when: false
 
-    - name: read existing claude settings
-      slurp:
-        src: "{{ claude_settings }}"
-      register: claude_settings_raw
-      failed_when: false
-
+    # Adds only missing entries per event, so hooks from other playbooks and
+    # their order are left alone.
     - name: register the notification hooks in claude settings
-      copy:
-        # combine() replaces the whole `hooks` key. If other hooks are ever
-        # added by hand, fold them into claude_notify_hooks above instead.
-        content: >-
-          {{ (claude_settings_raw.content | b64decode | from_json)
-             | combine({'hooks': claude_notify_hooks})
-             | to_nice_json(indent=2) }}
-        dest: "{{ claude_settings }}"
-        backup: yes
-      when: claude_settings_raw.content is defined
+      shell: |
+        jq --argjson new "$HOOKS" '
+          reduce ($new | to_entries[]) as $e (.;
+            .hooks[$e.key] = ((.hooks[$e.key] // []) as $cur | $cur + ($e.value - $cur)))
+        ' "$SETTINGS" > "$SETTINGS.tmp"
+        if cmp -s "$SETTINGS" "$SETTINGS.tmp"; then rm "$SETTINGS.tmp"; echo unchanged; else mv "$SETTINGS.tmp" "$SETTINGS"; fi
+      environment:
+        HOOKS: "{{ claude_notify_hooks | to_json }}"
+        SETTINGS: "{{ claude_settings }}"
+      register: hooks_merge
+      changed_when: "'unchanged' not in hooks_merge.stdout"

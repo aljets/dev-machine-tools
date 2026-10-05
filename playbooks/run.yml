@@ -11,3 +11,4 @@
 - import_playbook: pyenv.yml
 - import_playbook: claude.yml
 - import_playbook: claude_notify.yml
+- import_playbook: kitty_session.yml

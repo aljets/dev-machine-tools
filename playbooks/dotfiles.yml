@@ -31,6 +31,33 @@
         defaults write com.knollsoft.Rectangle "$key" "$(plutil -extract "$key" xml1 -o - "$plist")"
       done
       if [ -n "$running" ]; then open -a Rectangle; fi
+  # Asked once per machine; edit ~/tools/.gitconfig_personal to change it.
+  # Skipped when either answer is blank (including non-interactive runs).
+  - name: check for personal git identity
+    stat:
+      path: ~/tools/.gitconfig_personal
+    register: git_personal_config
+  - name: ask for personal git name
+    pause:
+      prompt: "Personal git name (blank to skip)"
+    register: git_name_input
+    when: not git_personal_config.stat.exists
+  - name: ask for personal git email
+    pause:
+      prompt: "Personal git email (blank to skip)"
+    register: git_email_input
+    when: not git_personal_config.stat.exists
+  - name: write personal git identity included by .gitconfig
+    copy:
+      dest: ~/tools/.gitconfig_personal
+      content: |
+        [user]
+            name = {{ git_name_input.user_input }}
+            email = {{ git_email_input.user_input }}
+    when:
+      - not git_personal_config.stat.exists
+      - git_name_input.user_input | default('') | trim | length > 0
+      - git_email_input.user_input | default('') | trim | length > 0
   - name: include private dotfiles vars if present
     include_vars: "{{ claude_extra_vars }}"
     failed_when: false
@@ -40,15 +67,6 @@
       state: directory
     with_items: "{{ private_dotfiles_files }}"
     when: private_dotfiles_files is defined
-  - name: write personal git identity included by .gitconfig
-    copy:
-      dest: "{{ git_personal_config_dest }}"
-      force: no
-      content: |
-        [user]
-            name = {{ git_personal_name }}
-            email = {{ git_personal_email }}
-    when: git_personal_email is defined
   - name: symlink private dotfiles
     file:
       src: "{{ item.file }}"

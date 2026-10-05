@@ -1,0 +1,68 @@
+---
+# tmux-resurrect style restore for kitty: tabs, splits, cwds, Claude Code and
+# vim sessions. A global kitty watcher saves the session on layout changes and
+# on quit; startup_session restores it. A Claude hook and a vim plugin set a
+# user var on their kitty window, and the claude/vim fish functions use it to
+# resume on restore.
+# Requires `globinclude conf.d/*.conf` in kitty.conf and vim-obsession.
+- hosts: all
+  vars:
+    home: "{{ lookup('env', 'HOME') }}"
+    src: "{{ playbook_dir }}/files/kitty-session"
+    claude_settings: "{{ lookup('env', 'HOME') }}/.claude/settings.json"
+    kitty_session_hooks:
+      SessionStart:
+        - hooks:
+            - type: command
+              command: "{{ lookup('env', 'HOME') }}/bin/claude-kitty-session"
+      SessionEnd:
+        - hooks:
+            - type: command
+              command: "{{ lookup('env', 'HOME') }}/bin/claude-kitty-session"
+
+  tasks:
+    - name: create directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "{{ home }}/bin"
+        - "{{ home }}/.config/kitty/conf.d"
+        - "{{ home }}/.config/fish/functions"
+        - "{{ home }}/.vim/plugin"
+
+    - name: symlink files into place
+      file:
+        src: "{{ src }}/{{ item.src }}"
+        dest: "{{ item.dest }}"
+        state: link
+      loop:
+        - {src: claude-kitty-session.sh, dest: "{{ home }}/bin/claude-kitty-session"}
+        - {src: claude.fish, dest: "{{ home }}/.config/fish/functions/claude.fish"}
+        - {src: vim.fish, dest: "{{ home }}/.config/fish/functions/vim.fish"}
+        - {src: vi.fish, dest: "{{ home }}/.config/fish/functions/vi.fish"}
+        - {src: kitty_session.vim, dest: "{{ home }}/.vim/plugin/kitty_session.vim"}
+        - {src: kitty-session.conf, dest: "{{ home }}/.config/kitty/conf.d/kitty-session.conf"}
+        - {src: kitty_session_watcher.py, dest: "{{ home }}/.config/kitty/conf.d/kitty_session_watcher.py"}
+
+    # startup_session errors at launch if the file is missing.
+    - name: seed an initial session
+      copy:
+        content: "launch\n"
+        dest: "{{ home }}/.config/kitty/last_session.conf"
+        force: false
+
+    # Adds only missing entries per event, so hooks from other playbooks and
+    # their order are left alone.
+    - name: register the session hooks in claude settings
+      shell: |
+        jq --argjson new "$HOOKS" '
+          reduce ($new | to_entries[]) as $e (.;
+            .hooks[$e.key] = ((.hooks[$e.key] // []) as $cur | $cur + ($e.value - $cur)))
+        ' "$SETTINGS" > "$SETTINGS.tmp"
+        if cmp -s "$SETTINGS" "$SETTINGS.tmp"; then rm "$SETTINGS.tmp"; echo unchanged; else mv "$SETTINGS.tmp" "$SETTINGS"; fi
+      environment:
+        HOOKS: "{{ kitty_session_hooks | to_json }}"
+        SETTINGS: "{{ claude_settings }}"
+      register: hooks_merge
+      changed_when: "'unchanged' not in hooks_merge.stdout"
