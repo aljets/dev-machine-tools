@@ -1,0 +1,72 @@
+---
+# Menu bar countdown to the next meeting, with a Join dialog just before it
+# starts. Reads macOS Calendar through EventKit, so the work Google account has
+# to be added under System Settings > Internet Accounts.
+# Relies on claude_notify.yml for SwiftBar's plugin directory and launch agent.
+# See files/meeting-bar/README.md.
+- hosts: all
+  vars:
+    home: "{{ lookup('env', 'HOME') }}"
+    src: "{{ playbook_dir }}/files/meeting-bar"
+    swiftbar_plugin_dir: "{{ lookup('env', 'HOME') }}/tools/swiftbar-plugins"
+    app: "{{ lookup('env', 'HOME') }}/Applications/MeetingBarHelper.app"
+
+  tasks:
+    - name: create directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "{{ app }}/Contents/MacOS"
+        - "{{ home }}/.cache/meeting-bar"
+        - "{{ home }}/bin"
+        - "{{ swiftbar_plugin_dir }}"
+
+    # Rebuild only when the source or plist changes. The bundle is ad-hoc
+    # signed, so each rebuild changes its code hash and macOS asks for
+    # Calendar access again.
+    - name: build and sign the helper app
+      shell: |
+        bin="$APP/Contents/MacOS/MeetingBarHelper"
+        if [ -x "$bin" ] && [ "$bin" -nt "$SRC/MeetingBarHelper.swift" ] && [ "$bin" -nt "$SRC/Info.plist" ]; then
+          echo unchanged
+          exit 0
+        fi
+        cp "$SRC/Info.plist" "$APP/Contents/Info.plist"
+        swiftc -O -o "$bin" "$SRC/MeetingBarHelper.swift"
+        codesign --force --sign - --identifier local.meeting-bar-helper "$APP"
+      environment:
+        APP: "{{ app }}"
+        SRC: "{{ src }}"
+      register: helper_build
+      changed_when: "'unchanged' not in helper_build.stdout"
+
+    - name: make the scripts executable in the repo
+      file:
+        path: "{{ src }}/{{ item }}"
+        mode: "0755"
+      loop:
+        - meeting-bar.1m.sh
+        - meeting-bar-open.sh
+
+    - name: symlink the opener into ~/bin
+      file:
+        src: "{{ src }}/meeting-bar-open.sh"
+        dest: "{{ home }}/bin/meeting-bar-open"
+        state: link
+
+    - name: symlink the swiftbar plugin
+      file:
+        src: "{{ src }}/meeting-bar.1m.sh"
+        dest: "{{ swiftbar_plugin_dir }}/meeting-bar.1m.sh"
+        state: link
+
+    # Ask for Calendar access now, while someone is at the keyboard, rather
+    # than on SwiftBar's first background run.
+    - name: request calendar access
+      command: open -n -W -a "{{ app }}" --args events "{{ home }}/.cache/meeting-bar/events.json"
+      when: helper_build.changed
+
+    - name: refresh swiftbar
+      command: open -g swiftbar://refreshallplugins
+      changed_when: false

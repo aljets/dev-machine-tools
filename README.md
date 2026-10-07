@@ -24,6 +24,8 @@ Playbooks (`run.yml` for mac, `run_linux.yml` for linux):
 - `claude`: Claude Code, settings, MCP servers, plugins
 - `claude_notify`: SwiftBar notifications for Claude Code (see
   `playbooks/files/claude-notify/README.md`)
+- `meeting_bar`: SwiftBar countdown to the next meeting with a Zoom join alert
+  (see `playbooks/files/meeting-bar/README.md`)
 - `kitty_session`: kitty session save/restore, including Claude Code sessions
 
 ## Use
