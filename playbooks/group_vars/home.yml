@@ -1,0 +1,38 @@
+dotfiles_repo: git@github.com:aljets/dotfiles.git
+dotfiles_repo_dest: ~/tools/dotfiles
+dotfiles_files:
+  - {file: '.vimrc', dest: ~/.vimrc}
+  - {file: '.gitconfig', dest: ~/.gitconfig}
+  - {file: '.kitty.conf', dest: ~/.config/kitty/kitty.conf}
+  - {file: 'fish/config.fish', dest: ~/.config/fish/config.fish}  # requires fish to be run once before it works
+  - {file: 'fish/functions', dest: ~/.config/fish/functions_from_dotfiles}
+scripts_repo: git@github.com:aljets/dotfiles.git
+scripts_repo_dest: ~/tools/dotfiles
+scripts_repo_bin_directory: bin
+brew_cask_packages:
+  - {package: 'kitty'}
+  - {package: 'font-fira-code'}
+  # - {package: 'obsidian'}  # work-only for now, maybe home later
+  - {package: 'rectangle'}
+  # doesn't seem to be discovering cask installed, erroring, so had to make brew_cask playbook
+brew_packages:
+  - bat
+  - fd
+  - fish
+  - the_silver_searcher
+  - git
+  - jq
+  - node
+  - tldr
+  - tree
+  - vim
+  - pyenv
+  - mdcat
+  - cheat # experimental
+  - less # for version 600+, which adds header option for pinning headers
+python_versions:
+  - {version: '3.12.12', venv: 'py312'}
+python_packages:
+  - isort
+  - flake8
+  - mypy

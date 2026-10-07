@@ -15,4 +15,4 @@
         brew install {{ '' if item.cask is defined and not item.cask else '--cask ' }}{{ item.package }}
     changed_when: install_output.rc == 0
     failed_when: install_output.rc != 0 and 'already an App at' not in install_output.stderr
-    loop: "{{ brew_cask_packages | rejectattr('package', 'in', brew_installed.stdout_lines) }}"
+    loop: "{{ (brew_cask_packages + work_brew_cask_packages | default([])) | rejectattr('package', 'in', brew_installed.stdout_lines) }}"

@@ -1,2 +1,5 @@
 [home]
 localhost ansible_connection=local
+
+[work]
+localhost

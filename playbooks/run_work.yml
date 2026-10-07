@@ -1,0 +1,13 @@
+- hosts: all
+  tasks:
+  - name: load work group_vars
+    group_by:
+      key: work
+- import_playbook: run_home.yml
+- import_playbook: frontend.yml
+- import_playbook: obsidian.yml
+- import_playbook: claude.yml
+- import_playbook: claude_notify.yml
+- import_playbook: meeting_bar.yml
+- import_playbook: kitty_session.yml
+#- import_playbook: tmux.yml

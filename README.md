@@ -4,7 +4,16 @@ Opinionated playbooks to set up devstack. Super simple playbooks that do very
 little, but it adds up. Requires `xcode-select --install` and GitHub SSH access
 (dotfiles and notes repos).
 
-Playbooks (`run.yml` for mac, `run_linux.yml` for linux):
+Entrypoints: `run_home.yml` (personal mac), `run_work.yml` (home plus work
+playbooks), `run_linux.yml`. Vars are in `group_vars/home.yml`;
+`run_work.yml` and `run_linux.yml` layer `work.yml` and `linux.yml` on top. Lists don't merge across
+groups, so additive ones use separate names (`work_brew_packages`). To run a
+single work playbook, pass `-i hosts_work`. Employer-specific config lives
+outside this repo in `claude_extra_vars` as `private_*` vars.
+
+Playbooks (work-only: `frontend`, `obsidian`, `claude`,
+`claude_notify`, `meeting_bar`, `kitty_session`;
+`tmux` is disabled):
 
 - `brew_packages` / `apt_packages`: configured packages
 - `brew_cask`: casks and tap formulae
@@ -32,11 +41,11 @@ Playbooks (`run.yml` for mac, `run_linux.yml` for linux):
 
 1. clone it
 1. install ansible (`brew install ansible`)
-1. configure `playbooks/group_vars/local.yml`
+1. configure `playbooks/group_vars/home.yml` and `work.yml`
 1. optionally, set up work config in `~/repos/dotfiles` (loaded via
    `claude_extra_vars`) from the dotfiles repo's `work-dotfiles.md`
-1. run `ansible-playbook playbooks/run.yml` (or `run_linux.yml`, or a single
-   playbook). It prompts before upgrading outdated brew packages.
+1. run `ansible-playbook playbooks/run_work.yml` (or `run_home.yml`,
+   `run_linux.yml`, or a single playbook). It prompts before upgrading outdated brew packages.
 
 ## What problems does this solve?
 

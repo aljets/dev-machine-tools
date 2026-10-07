@@ -6,12 +6,14 @@
       update_homebrew: yes
   - name: install missing brew packages
     homebrew:
-      name: "{{ brew_packages }}"
+      name: "{{ brew_packages + work_brew_packages | default([]) }}"
       state: present
+  # ansible is excluded: upgrading it mid-run breaks the running controller
   - name: list outdated brew packages
     ansible.builtin.shell: >
       brew outdated --json=v2 | jq -r --argjson leaves "$(brew leaves --installed-on-request | jq -R . | jq -s .)"
-      '(.formulae[] | select(.name as $n | $leaves | index($n))), .casks[]
+      '((.formulae[] | select(.name as $n | $leaves | index($n))), .casks[])
+      | select(.name != "ansible")
       | "\(.name) \(.installed_versions | join(",")) -> \(.current_version)"'
     register: brew_outdated
     changed_when: false

@@ -11,14 +11,14 @@
     file:
       path: "{{ item.dest | dirname }}"
       state: directory
-    with_items: "{{ dotfiles_files }}"
+    with_items: "{{ dotfiles_files + work_dotfiles_files | default([]) }}"
   - name: symlink dotfiles to location per config mapping
     # Fails (thankfully) if the dotfile exists and is a file
     file:
       src: "{{ dotfiles_repo_dest }}/{{ item.file }}"
       dest: "{{ item.dest }}"
       state: link
-    with_items: "{{ dotfiles_files }}"
+    with_items: "{{ dotfiles_files + work_dotfiles_files | default([]) }}"
   # Keys in the repo plist overwrite the app's values; other keys are left alone.
   # Rectangle holds settings in memory, so quit it around the writes.
   - name: apply rectangle settings
@@ -61,6 +61,7 @@
   - name: include private dotfiles vars if present
     include_vars: "{{ claude_extra_vars }}"
     failed_when: false
+    when: claude_extra_vars is defined
   - name: create parent directories for private dotfiles
     file:
       path: "{{ item.dest | dirname }}"

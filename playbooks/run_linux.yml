@@ -1,3 +1,8 @@
+- hosts: all
+  tasks:
+  - name: load linux group_vars
+    group_by:
+      key: linux
 - import_playbook: apt_packages.yml
 - import_playbook: fish.yml
 - import_playbook: dotfiles.yml

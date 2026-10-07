@@ -1,0 +1,12 @@
+# Layered over home.yml by run_linux.yml
+ansible_group_priority: 10
+apt_packages:
+  - fish
+  - silversearcher-ag
+  - vim-gtk  # gtk has 'clipboard' support
+  - npm
+  - make
+  - tldr
+  - tmux
+  - python3-pip
+  - python3-venv

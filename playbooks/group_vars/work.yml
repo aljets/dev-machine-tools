@@ -1,0 +1,46 @@
+# Layered over home.yml by run_work.yml
+ansible_group_priority: 10
+claude_extra_vars: ~/repos/dotfiles/ansible/vars.yml
+# tmux_plugin_manager_repo_dest: ~/tools/tmux-plugin-manager
+work_dotfiles_files:
+  - {file: '.tmux.conf', dest: ~/.tmux.conf}
+  - {file: 'agents/AGENTS.md', dest: ~/.claude/CLAUDE.md}
+  - {file: 'agents/skills/keep', dest: ~/.claude/skills/keep}
+notes_repo: git@github.com:aljets/notes.git
+notes_dest: ~/notes
+templater_version: "2.20.5"
+work_brew_cask_packages:
+  - {package: 'obsidian'}
+  - {package: 'swiftbar'}  # menu bar host for claude-notify and meeting-bar
+  - {repo: 'atlassian/homebrew-acli', package: acli, cask: false}
+  - {repo: 'xo/xo', package: usql, cask: false}  # universal sql client
+  - {repo: 'databricks/tap', package: databricks, cask: false}
+work_brew_packages:
+  - rclone
+  - awscli
+  - glab
+  - parquet-cli
+  - pgformatter
+  - tfenv
+  - xsv
+editor_mode: vim
+effort_level: high
+model: claude-fable-5[1m]
+allowed_tools:
+  - "Bash(jq *)"
+  - "Bash(ag *)"
+  - "Bash(ls *)"
+  - "Bash(find *)"
+  - "Bash(grep *)"
+  - "Read(//tmp/**)"
+
+mcp_servers:
+  - tableau https://mcp.tableau.com
+
+claude_plugin_marketplaces:
+  - anthropics/skills
+  - anthropics/claude-plugins-official
+claude_plugins:
+  - example-skills@anthropic-agent-skills
+  - frontend-design@claude-plugins-official
+  - swift-lsp@claude-plugins-official
