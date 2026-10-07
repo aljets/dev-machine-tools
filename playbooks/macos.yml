@@ -14,6 +14,10 @@
     changed_when: "'changed' in battery_percentage.stdout"
   # hidutil mappings reset on reboot, so a LaunchAgent reapplies at login.
   # RunAtLoad also applies it immediately when the agent is (re)bootstrapped below.
+  - name: create LaunchAgents directory
+    file:
+      path: ~/Library/LaunchAgents
+      state: directory
   - name: install caps-lock-to-escape launch agent
     copy:
       src: files/com.aljets.caps-to-escape.plist
