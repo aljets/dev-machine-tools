@@ -14,6 +14,7 @@ brew_cask_packages:
   - {package: 'font-fira-code'}
   # - {package: 'obsidian'}  # work-only for now, maybe home later
   - {package: 'rectangle'}
+  - {package: 'antigravity-cli'}
   # doesn't seem to be discovering cask installed, erroring, so had to make brew_cask playbook
 brew_packages:
   - bat
@@ -28,7 +29,6 @@ brew_packages:
   - vim
   - pyenv
   - mdcat
-  - gemini-cli
   - cheat # experimental
   - less # for version 600+, which adds header option for pinning headers
 python_versions:
