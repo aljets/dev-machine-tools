@@ -10,7 +10,7 @@ replaces Notion Calendar's menu bar item without installing it.
 
 | file | role |
 | --- | --- |
-| `MeetingBarHelper.swift` | EventKit reader (`events`), join panel (`alert`), menu bar pill image (`pill`) |
+| `MeetingBarHelper.swift` | EventKit reader (`events`), join panel (`alert`), menu bar pill image (`pill`), Docs/Sheets/Slides row icons (`icon`) |
 | `Info.plist` | Bundle metadata, including the Calendar usage strings |
 | `meeting-bar.1m.sh` | SwiftBar plugin. Fetches, fires alerts, renders the menu |
 | `meeting-bar-open.sh` | Opens a URL in the Google Calendar web app (`~/bin/meeting-bar-open`) |
@@ -50,6 +50,21 @@ The first Zoom URL in the event's URL, location or notes is rewritten to
 `zoommtg://<host>/join?confno=…&pwd=…`, which opens the Zoom app directly
 instead of leaving a browser tab behind. Google Meet links are passed through
 as-is.
+
+## Doc links
+
+The current and next meetings list each Google Docs/Drive link on its own row
+under the meeting. Links come from Google Calendar attachments (read through
+EventKit's private `attachments` property, using the file name as the label)
+and from any `docs.google.com` or `drive.google.com` URL in the event's URL,
+location or notes, deduped by Drive file id. A description link is labeled
+with its link text, or, when the link text is the bare URL, with the label in
+front of it ("Agenda: <url>" shows as "Agenda"). With neither it falls back to
+"Google Doc", "Google Sheet" and so on. Each row gets a Docs, Sheets or Slides
+style icon drawn by the helper and cached in `~/.cache/meeting-bar`. Menus pin
+icons to the left edge and SwiftBar strips leading spaces, so the Join and doc
+icons carry a "└" connector on their left, which both indents the row and ties
+it to the meeting above.
 
 ## Opening events
 

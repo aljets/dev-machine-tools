@@ -1,8 +1,10 @@
 // Calendar reader and meeting alert for the meeting-bar SwiftBar plugin.
 //
 //   MeetingBarHelper events <out.json>                 write upcoming events
-//   MeetingBarHelper alert <title> <start> <join-url>  show the join dialog
+//   MeetingBarHelper alert <title> <start> <join-url> [<docs b64 json>]
+//                                                      show the join dialog
 //   MeetingBarHelper pill <text> <bg> <fg>             print a title PNG as base64
+//   MeetingBarHelper icon <doc|sheet|slides|drive|join> print a file icon PNG as base64
 //
 // Lives in its own .app bundle and is launched through `open` so that macOS
 // attributes the Calendar permission to this bundle. Run directly from
@@ -10,6 +12,12 @@
 // NSCalendarsFullAccessUsageDescription, and the request is denied silently.
 import AppKit
 import EventKit
+
+struct Doc: Codable {
+    let title: String
+    let url: String
+    let kind: String
+}
 
 struct Meeting: Codable {
     let id: String
@@ -20,6 +28,7 @@ struct Meeting: Codable {
     let calendar: String
     let color: String
     let join: String?
+    let docs: [Doc]
     let link: String
     let uid: String
 }
@@ -60,6 +69,101 @@ func joinURL(_ event: EKEvent) -> String? {
         return String(haystack[r])
     }
     return nil
+}
+
+func googleFileID(_ url: String) -> String? {
+    let id = try! NSRegularExpression(pattern: #"(?:/d/|[?&]id=)([A-Za-z0-9_-]{20,})"#)
+    guard let m = id.firstMatch(in: url, range: NSRange(url.startIndex..., in: url)),
+          let r = Range(m.range(at: 1), in: url) else { return nil }
+    return String(url[r])
+}
+
+func docKind(_ url: String) -> String {
+    if url.contains("/spreadsheets/") { return "Sheet" }
+    if url.contains("/presentation/") { return "Slides" }
+    if url.contains("/document/") { return "Doc" }
+    return "Drive file"
+}
+
+func iconKind(_ url: String) -> String {
+    switch docKind(url) {
+    case "Sheet": return "sheet"
+    case "Slides": return "slides"
+    case "Doc": return "doc"
+    default: return "drive"
+    }
+}
+
+func decodeEntities(_ s: String) -> String {
+    [("&nbsp;", " "), ("&quot;", "\""), ("&#39;", "'"), ("&lt;", "<"), ("&gt;", ">"), ("&amp;", "&")]
+        .reduce(s) { $0.replacingOccurrences(of: $1.0, with: $1.1) }
+}
+
+func plainText(_ html: String) -> String {
+    decodeEntities(html.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression))
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
+// A link whose text is just the URL is usually introduced by a label on the
+// same or previous line, as in "Agenda: <url>" or "Program Doc - <url>".
+func label(before text: Substring) -> String? {
+    let lines = String(text.suffix(300))
+        .replacingOccurrences(of: #"<br\s*/?>|</(div|p|li|h\d)>"#, with: "\n", options: .regularExpression)
+        .components(separatedBy: .newlines)
+    guard let last = lines.map(plainText).last(where: { !$0.isEmpty }) else { return nil }
+    let trimmed = last.trimmingCharacters(in: CharacterSet(charactersIn: " :-–—|"))
+    return trimmed.isEmpty || trimmed.count > 60 || trimmed.contains("http") ? nil : trimmed
+}
+
+// Files attached in Google Calendar come through CalDAV as ATTACH properties,
+// which EventKit keeps but only exposes through the private `attachments`
+// property. Links pasted into the description are picked up from the notes.
+// The same file often appears in both, so they are deduped by Drive file id.
+func docs(_ event: EKEvent) -> [Doc] {
+    var found: [Doc] = []
+    var seen: Set<String> = []
+    func add(_ title: String, _ url: String) {
+        let key = googleFileID(url) ?? url
+        guard seen.insert(key).inserted else { return }
+        found.append(Doc(title: title, url: url, kind: iconKind(url)))
+    }
+
+    let attachments = event.responds(to: NSSelectorFromString("attachments"))
+        ? event.value(forKey: "attachments") as? [NSObject] ?? [] : []
+    for a in attachments {
+        guard a.responds(to: NSSelectorFromString("URLString")),
+              let url = a.value(forKey: "URLString") as? String,
+              url.hasPrefix("https://") else { continue }
+        let name = a.responds(to: NSSelectorFromString("fileName")) ? a.value(forKey: "fileName") as? String : nil
+        add(name ?? docKind(url), url)
+    }
+
+    let haystack = [event.url?.absoluteString, event.location, event.notes]
+        .compactMap { $0 }
+        .joined(separator: "\n")
+    let range = NSRange(haystack.startIndex..., in: haystack)
+    let anchor = try! NSRegularExpression(
+        pattern: #"<a\s[^>]*href="(https://(?:docs|drive)\.google\.com/[^"]+)"[^>]*>(.*?)</a>"#,
+        options: .dotMatchesLineSeparators)
+    for m in anchor.matches(in: haystack, range: range) {
+        guard let u = Range(m.range(at: 1), in: haystack),
+              let t = Range(m.range(at: 2), in: haystack),
+              let whole = Range(m.range, in: haystack) else { continue }
+        let url = decodeEntities(String(haystack[u]))
+        let text = plainText(String(haystack[t]))
+        let title = text.isEmpty || text.hasPrefix("http")
+            ? label(before: haystack[..<whole.lowerBound]) ?? "Google \(docKind(url))"
+            : text
+        add(title, url)
+    }
+    let bare = try! NSRegularExpression(
+        pattern: #"https://(docs|drive)\.google\.com/[^\s<>"')\]]+"#)
+    for m in bare.matches(in: haystack, range: range) {
+        guard let r = Range(m.range, in: haystack) else { continue }
+        let url = decodeEntities(String(haystack[r]))
+        add(label(before: haystack[..<r.lowerBound]) ?? "Google \(docKind(url))", url)
+    }
+    return found
 }
 
 // Google's event page takes eid = base64("<event id> <calendar id>"). Over
@@ -145,6 +249,7 @@ func writeEvents(to path: String) {
                     calendar: e.calendar.title,
                     color: hex(e.calendar.color),
                     join: joinURL(e),
+                    docs: docs(e),
                     link: googleLink(e),
                     uid: e.calendarItemExternalIdentifier ?? "")
             }
@@ -159,12 +264,10 @@ let panelWidth: CGFloat = 360
 let screenMargin: CGFloat = 12
 
 func relative(_ start: Date) -> String {
-    let minutes = Int((start.timeIntervalSinceNow / 60).rounded())
-    switch minutes {
-    case 0: return "Starting now"
-    case 1...: return "Starts in \(minutes) min"
-    default: return "Started \(-minutes) min ago"
-    }
+    let seconds = start.timeIntervalSinceNow
+    if seconds > 0 { return "Starts in \(Int(ceil(seconds / 60))) min" }
+    let ago = Int(-seconds / 60)
+    return ago == 0 ? "Starting now" : "Started \(ago) min ago"
 }
 
 // Accepts key status without activating the app, so the alert takes Return /
@@ -217,6 +320,68 @@ final class PillButton: NSButton {
     }
 
     override var wantsUpdateLayer: Bool { true }
+
+    func pulse() {
+        let fade = CABasicAnimation(keyPath: "opacity")
+        fade.fromValue = 1
+        fade.toValue = 0.45
+        fade.duration = 0.8
+        fade.autoreverses = true
+        fade.repeatCount = .infinity
+        fade.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        layer?.add(fade, forKey: "pulse")
+    }
+}
+
+// A doc under the alert's subtitle. Opening one leaves the alert up, since the
+// meeting still needs joining.
+final class DocLink: NSButton {
+    let action_: Action
+    let label: String
+
+    init(_ doc: Doc) {
+        action_ = Action { if let url = URL(string: doc.url) { NSWorkspace.shared.open(url) } }
+        label = doc.title
+        super.init(frame: .zero)
+        isBordered = false
+        image = fileIconImage(kind: doc.kind)
+        imagePosition = .imageLeading
+        imageHugsTitle = true
+        setTitle(underlined: false)
+        cell?.lineBreakMode = .byTruncatingTail
+        setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        target = action_
+        action = #selector(Action.fire)
+        toolTip = doc.url
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    // Plain label color reads better on the translucent panel than link blue;
+    // the file icon and a hover underline mark it as a link.
+    func setTitle(underlined: Bool) {
+        attributedTitle = NSAttributedString(string: label, attributes: [
+            .foregroundColor: NSColor.labelColor,
+            .font: NSFont.systemFont(ofSize: 12),
+            .underlineStyle: underlined ? NSUnderlineStyle.single.rawValue : 0,
+        ])
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways],
+                                       owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) { setTitle(underlined: true) }
+    override func mouseExited(with event: NSEvent) { setTitle(underlined: false) }
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func resetCursorRects() {
+        addCursorRect(bounds, cursor: .pointingHand)
+    }
 }
 
 struct AlertActions {
@@ -225,8 +390,8 @@ struct AlertActions {
     let join: (() -> Void)?
 }
 
-func makePanel(on screen: NSScreen, title: String, subtitle: NSTextField,
-               actions: AlertActions) -> NSPanel {
+func makePanel(on screen: NSScreen, title: String, subtitle: NSTextField, docs: [Doc],
+               actions: AlertActions) -> (NSPanel, PillButton?) {
     let panel = AlertPanel(
         contentRect: NSRect(x: 0, y: 0, width: panelWidth, height: 100),
         styleMask: [.borderless, .nonactivatingPanel],
@@ -253,13 +418,14 @@ func makePanel(on screen: NSScreen, title: String, subtitle: NSTextField,
     heading.font = .systemFont(ofSize: 14, weight: .semibold)
     heading.lineBreakMode = .byTruncatingTail
 
-    let text = NSStackView(views: [heading, subtitle])
+    let text = NSStackView(views: [heading, subtitle] + docs.map(DocLink.init))
     text.orientation = .vertical
     text.alignment = .leading
     text.spacing = 2
+    text.setCustomSpacing(8, after: subtitle)
     let header = NSStackView(views: [icon, text])
     header.spacing = 12
-    header.alignment = .centerY
+    header.alignment = docs.isEmpty ? .centerY : .top
 
     let secondary = NSColor.labelColor.withAlphaComponent(0.1)
     var buttons: [NSButton] = [
@@ -269,10 +435,12 @@ func makePanel(on screen: NSScreen, title: String, subtitle: NSTextField,
     if let snooze = actions.snooze {
         buttons.append(PillButton("Snooze 1m", fill: secondary, text: .labelColor, run: snooze))
     }
+    var joinButton: PillButton?
     if let join = actions.join {
-        let joinButton = PillButton("Join", fill: .systemBlue, text: .white, bold: true, run: join)
-        joinButton.keyEquivalent = "\r"
-        buttons.append(joinButton)
+        let button = PillButton("Join", fill: .systemBlue, text: .white, bold: true, run: join)
+        button.keyEquivalent = "\r"
+        buttons.append(button)
+        joinButton = button
     }
     let row = NSStackView(views: [NSView()] + buttons)
     row.spacing = 8
@@ -299,14 +467,14 @@ func makePanel(on screen: NSScreen, title: String, subtitle: NSTextField,
     let area = screen.visibleFrame
     panel.setFrameTopLeftPoint(NSPoint(x: area.maxX - panel.frame.width - screenMargin,
                                        y: area.maxY - screenMargin))
-    return panel
+    return (panel, joinButton)
 }
 
 var openPanels: [NSPanel] = []
 
 // One panel per display, since there is no telling which one is being looked
 // at. Any button on any of them closes them all.
-func showAlert(title: String, start: Int, join: String) {
+func showAlert(title: String, start: Int, join: String, docs: [Doc]) {
     let startDate = Date(timeIntervalSince1970: TimeInterval(start))
     let expiresAt = startDate.addingTimeInterval(expiryAfterStart)
     let formatter = DateFormatter()
@@ -326,7 +494,7 @@ func showAlert(title: String, start: Int, join: String) {
         snooze: Date().addingTimeInterval(snooze) < expiresAt ? {
             close()
             DispatchQueue.main.asyncAfter(deadline: .now() + snooze) {
-                showAlert(title: title, start: start, join: join)
+                showAlert(title: title, start: start, join: join, docs: docs)
             }
         } : nil,
         join: join.isEmpty ? nil : {
@@ -336,16 +504,25 @@ func showAlert(title: String, start: Int, join: String) {
         })
 
     var subtitles: [NSTextField] = []
+    var joinButtons: [PillButton] = []
     for screen in NSScreen.screens {
         let subtitle = NSTextField(labelWithString: subtitleText())
         subtitle.font = .systemFont(ofSize: 12)
         subtitle.textColor = .secondaryLabelColor
         subtitles.append(subtitle)
-        openPanels.append(makePanel(on: screen, title: title, subtitle: subtitle, actions: actions))
+        let (panel, joinButton) = makePanel(on: screen, title: title, subtitle: subtitle,
+                                            docs: docs, actions: actions)
+        openPanels.append(panel)
+        joinButton.map { joinButtons.append($0) }
     }
 
     timers.append(Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { _ in
         subtitles.forEach { $0.stringValue = subtitleText() }
+    })
+    timers.append(Timer.scheduledTimer(withTimeInterval: max(startDate.timeIntervalSinceNow, 0),
+                                       repeats: false) { _ in
+        subtitles.forEach { $0.stringValue = subtitleText() }
+        joinButtons.forEach { $0.pulse() }
     })
     // Close on its own once the meeting is well underway.
     timers.append(Timer.scheduledTimer(withTimeInterval: max(expiresAt.timeIntervalSinceNow, 60),
@@ -389,7 +566,114 @@ func pill(text: String, background: String, foreground: String) -> String {
     return rep.representation(using: .png, properties: [:])!.base64EncodedString()
 }
 
+// Icon for a row under a meeting: a "└" connector, which also indents the row
+// since menus pin icons to the left edge, then either a page in the style of
+// Google's file icons or, for "join", a video symbol. The join icon is used as
+// a template image so it follows the menu's text color.
+let indent: CGFloat = 12
+
+func iconRep(kind: String, connector: Bool) -> NSBitmapImageRep {
+    func rgb(_ v: UInt32) -> NSColor {
+        NSColor(srgbRed: CGFloat((v >> 16) & 0xff) / 255, green: CGFloat((v >> 8) & 0xff) / 255,
+                blue: CGFloat(v & 0xff) / 255, alpha: 1)
+    }
+    let fill = ["doc": rgb(0x4285f4), "sheet": rgb(0x0f9d58), "slides": rgb(0xf4b400)][kind] ?? rgb(0x8e8e93)
+    let lead = connector ? indent : 0
+    let size = NSSize(width: lead + 16, height: 16)
+    let scale: CGFloat = 2
+    let rep = NSBitmapImageRep(
+        bitmapDataPlanes: nil, pixelsWide: Int(size.width * scale), pixelsHigh: Int(size.height * scale),
+        bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+        colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+    rep.size = size
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+
+    if connector {
+        let elbow = NSBezierPath()
+        elbow.move(to: NSPoint(x: 5, y: 16))
+        elbow.line(to: NSPoint(x: 5, y: 8))
+        elbow.line(to: NSPoint(x: indent, y: 8))
+        elbow.lineWidth = 1.2
+        elbow.lineJoinStyle = .round
+        (kind == "join" ? NSColor.black.withAlphaComponent(0.5) : rgb(0x8e8e93)).setStroke()
+        elbow.stroke()
+
+        let shift = NSAffineTransform()
+        shift.translateX(by: indent, yBy: 0)
+        shift.concat()
+    }
+
+    if kind == "join" {
+        let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .regular)
+        if let symbol = NSImage(systemSymbolName: "video.fill", accessibilityDescription: nil)?
+            .withSymbolConfiguration(config) {
+            let fit = min(1, 15 / symbol.size.width, 15 / symbol.size.height)
+            let w = symbol.size.width * fit, h = symbol.size.height * fit
+            symbol.draw(in: NSRect(x: (16 - w) / 2, y: (16 - h) / 2, width: w, height: h))
+        }
+        NSGraphicsContext.restoreGraphicsState()
+        return rep
+    }
+
+    let page = NSRect(x: 2.5, y: 0.5, width: 11, height: 15)
+    let fold: CGFloat = 3.5
+    let body = NSBezierPath()
+    body.move(to: NSPoint(x: page.minX, y: page.minY))
+    body.line(to: NSPoint(x: page.maxX, y: page.minY))
+    body.line(to: NSPoint(x: page.maxX, y: page.maxY - fold))
+    body.line(to: NSPoint(x: page.maxX - fold, y: page.maxY))
+    body.line(to: NSPoint(x: page.minX, y: page.maxY))
+    body.close()
+    fill.setFill()
+    body.fill()
+
+    let corner = NSBezierPath()
+    corner.move(to: NSPoint(x: page.maxX - fold, y: page.maxY))
+    corner.line(to: NSPoint(x: page.maxX - fold, y: page.maxY - fold))
+    corner.line(to: NSPoint(x: page.maxX, y: page.maxY - fold))
+    corner.close()
+    (fill.blended(withFraction: 0.35, of: .black) ?? fill).setFill()
+    corner.fill()
+
+    NSColor.white.setFill()
+    let left = page.minX + 2.5
+    let width = page.width - 5
+    switch kind {
+    case "sheet":
+        NSRect(x: left, y: 3.5, width: width, height: 6).fill()
+        fill.setFill()
+        NSRect(x: left + width / 2 - 0.4, y: 3.5, width: 0.8, height: 6).fill()
+        NSRect(x: left, y: 6.1, width: width, height: 0.8).fill()
+    case "slides":
+        NSRect(x: left, y: 4, width: width, height: 5).fill()
+        fill.setFill()
+        NSRect(x: left + 1, y: 5, width: width - 2, height: 3).fill()
+    default:
+        for y: CGFloat in [3.5, 6, 8.5] {
+            NSRect(x: left, y: y, width: width, height: 1.2).fill()
+        }
+    }
+    NSGraphicsContext.restoreGraphicsState()
+    return rep
+}
+
+func fileIcon(kind: String) -> String {
+    iconRep(kind: kind, connector: true).representation(using: .png, properties: [:])!.base64EncodedString()
+}
+
+func fileIconImage(kind: String) -> NSImage {
+    let rep = iconRep(kind: kind, connector: false)
+    let image = NSImage(size: rep.size)
+    image.addRepresentation(rep)
+    return image
+}
+
 let args = CommandLine.arguments
+if args.count == 3, args[1] == "icon" {
+    print(fileIcon(kind: args[2]))
+    exit(0)
+}
 if args.count == 5, args[1] == "pill" {
     print(pill(text: args[2], background: args[3], foreground: args[4]))
     exit(0)
@@ -403,13 +687,17 @@ case "events" where args.count == 3:
     // `open -W` meanwhile, so give up rather than hang the plugin.
     DispatchQueue.main.asyncAfter(deadline: .now() + watchdog) { exit(1) }
     writeEvents(to: args[2])
-case "alert" where args.count == 5:
+case "alert" where args.count == 5 || args.count == 6:
+    // Docs arrive as base64 JSON so titles survive the shell's tab splitting.
+    let docs = args.count == 6
+        ? Data(base64Encoded: args[5]).flatMap { try? JSONDecoder().decode([Doc].self, from: $0) } ?? []
+        : []
     DispatchQueue.main.async {
-        showAlert(title: args[2], start: Int(args[3]) ?? 0, join: args[4])
+        showAlert(title: args[2], start: Int(args[3]) ?? 0, join: args[4], docs: docs)
     }
 default:
     FileHandle.standardError.write(
-        "usage: MeetingBarHelper events <out.json> | alert <title> <start> <join-url> | pill <text> <bg> <fg>\n"
+        "usage: MeetingBarHelper events <out.json> | alert <title> <start> <join-url> [docs] | pill <text> <bg> <fg> | icon <kind>\n"
             .data(using: .utf8)!)
     exit(64)
 }
