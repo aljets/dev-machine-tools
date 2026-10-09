@@ -28,6 +28,7 @@ brew_packages:
   - vim
   - pyenv
   - mdcat
+  - gemini-cli
   - cheat # experimental
   - less # for version 600+, which adds header option for pinning headers
 python_versions:
