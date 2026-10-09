@@ -62,3 +62,7 @@
     shell: claude plugin install {{ item }} && claude plugin update {{ item }}
     loop: "{{ private_claude_plugins }}"
     when: private_claude_plugins is defined
+  - name: install/update databricks ai tools for claude code
+    shell: |
+      command -v databricks >/dev/null || exit 0
+      databricks aitools install --agents claude-code --scope global < /dev/null
